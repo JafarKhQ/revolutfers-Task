@@ -3,6 +3,8 @@ package me.memleak.revolutfers;
 import io.javalin.Javalin;
 import me.memleak.revolutfers.controller.AccountController;
 import me.memleak.revolutfers.controller.TransactionController;
+import me.memleak.revolutfers.exception.AccountNotFoundException;
+import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,6 +40,12 @@ public class ServerStartup {
       path("transaction", () -> {
         post(transactionController::doTransaction);
       });
+    });
+
+    app.exception(AccountNotFoundException.class, (e, ctx) -> {
+      ctx.status(HttpStatus.NOT_FOUND_404).result(e.getMessage());
+    }).exception(Exception.class, (e, ctx) -> {
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR_500).result(e.getMessage());
     });
   }
 }

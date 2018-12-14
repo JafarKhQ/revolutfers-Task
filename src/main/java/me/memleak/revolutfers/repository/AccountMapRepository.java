@@ -15,7 +15,9 @@ public class AccountMapRepository {
 
   public Account create(BigDecimal balance) {
     long id = idGenerator.getAndIncrement();
-    return accounts.put(id, new Account(id, balance));
+    Account account = new Account(id, balance);
+    accounts.put(id, account);
+    return account;
   }
 
   public List<Account> findAll() {

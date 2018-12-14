@@ -23,14 +23,18 @@ public class AccountController {
 
   public void getAccount(Context ctx) {
     long id = ctx.validatedPathParam("id").asLong()
-        .check(it -> it>=0, "Id cant be negative.")
+        .check(it -> it >= 0, "Id cant be negative.")
         .getOrThrow();
 
     ctx.json(service.get(id));
   }
 
   public void createAccount(Context ctx) {
-    ctx.json(service.create(ctx.bodyAsClass(Double.class)))
+    double amount = ctx.validatedBodyAsClass(Double.class)
+        .check(it -> it >= 0, "Account balance cant be less than ZERO.")
+        .getOrThrow();
+
+    ctx.json(service.create(amount))
         .status(HttpStatus.CREATED_201);
   }
 }

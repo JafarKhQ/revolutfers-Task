@@ -1,6 +1,7 @@
 package me.memleak.revolutfers.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Account {
   private final Long id;
@@ -25,5 +26,19 @@ public class Account {
 
   public void setBalance(BigDecimal balance) {
     this.balance = balance;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Account account = (Account) o;
+    return id.equals(account.id) &&
+        (balance.compareTo(account.balance) == 0);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, balance);
   }
 }

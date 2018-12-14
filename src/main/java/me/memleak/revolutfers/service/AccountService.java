@@ -27,13 +27,13 @@ public class AccountService {
 
   public Account get(long id) {
     return repository.find(id)
-        .orElseThrow(() -> new AccountNotFoundException("Cant find Account with id: {}", id));
+        .orElseThrow(() -> new AccountNotFoundException("Cant find Account with id: {0}", id));
   }
 
   public Account create(double balance) {
     return repository.create(toBankingBalance.apply(balance));
   }
 
-  private DoubleFunction<BigDecimal> toBankingBalance =
+  DoubleFunction<BigDecimal> toBankingBalance =
       (d) -> BigDecimal.valueOf(d).setScale(2, RoundingMode.CEILING);
 }

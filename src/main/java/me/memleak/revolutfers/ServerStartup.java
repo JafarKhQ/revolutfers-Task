@@ -13,21 +13,27 @@ import static io.javalin.apibuilder.ApiBuilder.*;
 
 @Singleton
 public class ServerStartup {
+  private final Javalin app;
   private final AccountController accountController;
   private final TransactionController transactionController;
 
   @Inject
-  public ServerStartup(AccountController accountController, TransactionController transactionController) {
+  public ServerStartup(Javalin app,
+                       AccountController accountController,
+                       TransactionController transactionController) {
+    this.app = app;
     this.accountController = accountController;
     this.transactionController = transactionController;
   }
 
-  public void boot() {
-    Javalin app = Javalin.create()
-        .start(7000);
+  void boot() {
+    setupRoutes(app);
+    setupExceptions(app);
 
-    app.get("/", ctx -> ctx.result("Hello World"));
+    app.start();
+  }
 
+  private void setupRoutes(Javalin app) {
     app.routes(() -> {
       path("accounts", () -> {
         get(accountController::getAllAccounts);
@@ -41,7 +47,9 @@ public class ServerStartup {
         post(transactionController::doTransaction);
       });
     });
+  }
 
+  private void setupExceptions(Javalin app) {
     app.exception(AccountNotFoundException.class, (e, ctx) -> {
       ctx.status(HttpStatus.NOT_FOUND_404).result(e.getMessage());
     }).exception(Exception.class, (e, ctx) -> {

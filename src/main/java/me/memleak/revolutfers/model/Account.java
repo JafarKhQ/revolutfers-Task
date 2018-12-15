@@ -4,8 +4,12 @@ import java.math.BigDecimal;
 import java.util.Objects;
 
 public class Account {
-  private final Long id;
+  private Long id;
   private BigDecimal balance;
+
+  public Account() {
+    // make jackson happy :/
+  }
 
   public Account(Long id) {
     this(id, BigDecimal.ZERO);
@@ -14,6 +18,10 @@ public class Account {
   public Account(Long id, BigDecimal balance) {
     this.id = id;
     this.balance = balance;
+  }
+
+  public void setId(Long id) {
+    this.id = id;
   }
 
   public Long getId() {

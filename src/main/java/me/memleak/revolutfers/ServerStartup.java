@@ -13,6 +13,8 @@ import static io.javalin.apibuilder.ApiBuilder.*;
 
 @Singleton
 public class ServerStartup {
+  private static final int PORT = 7000;
+
   private final Javalin app;
   private final AccountController accountController;
   private final TransactionController transactionController;
@@ -26,11 +28,20 @@ public class ServerStartup {
     this.transactionController = transactionController;
   }
 
-  void boot() {
+  public ServerStartup boot() {
+    return boot(PORT);
+  }
+
+  public ServerStartup boot(int port) {
     setupRoutes(app);
     setupExceptions(app);
+    app.start(port);
 
-    app.start();
+    return this;
+  }
+
+  public void shutdown() {
+    app.stop();
   }
 
   private void setupRoutes(Javalin app) {

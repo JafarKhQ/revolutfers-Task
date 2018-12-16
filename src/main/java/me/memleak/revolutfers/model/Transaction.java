@@ -3,6 +3,7 @@ package me.memleak.revolutfers.model;
 import java.math.BigDecimal;
 
 public class Transaction extends ModelId {
+
   public enum TransactionStatus {
     FAILED,
     PENDING,
@@ -13,6 +14,7 @@ public class Transaction extends ModelId {
   private long destinationId;
   private BigDecimal amount;
   private TransactionStatus status;
+  private String message;
 
   public Transaction() {
     // make jackson happy :/
@@ -55,5 +57,13 @@ public class Transaction extends ModelId {
 
   public void setStatus(TransactionStatus status) {
     this.status = status;
+  }
+
+  public String getMessage() {
+    return message;
+  }
+
+  public void setMessage(String message) {
+    this.message = message;
   }
 }

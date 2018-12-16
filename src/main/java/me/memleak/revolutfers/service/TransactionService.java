@@ -25,6 +25,14 @@ public class TransactionService {
     return repository.findAll();
   }
 
+  public List<Transaction> getUnprocessed() {
+    return repository.findUnprocessed();
+  }
+
+  public Transaction update(Transaction transaction) {
+    return repository.update(transaction);
+  }
+
   public Transaction get(long id) {
     return repository.find(id)
         .orElseThrow(() -> new TransactionNotFoundException("Cant find Transaction with id: {0}", id));

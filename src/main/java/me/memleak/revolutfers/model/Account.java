@@ -1,11 +1,17 @@
 package me.memleak.revolutfers.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.math.BigDecimal;
 import java.util.Objects;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Account extends ModelId {
 
   private BigDecimal balance;
+  @JsonIgnore
+  private Lock lock = new ReentrantLock();
 
   public Account() {
     // make jackson happy :/
@@ -30,6 +36,10 @@ public class Account extends ModelId {
 
   public void setBalance(BigDecimal balance) {
     this.balance = balance;
+  }
+
+  public Lock getLock() {
+    return lock;
   }
 
   @Override

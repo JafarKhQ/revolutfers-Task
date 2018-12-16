@@ -18,6 +18,16 @@ public abstract class BaseMapRepository<T extends ModelId> {
     return item;
   }
 
+  public T update(T item) {
+    Long id = item.getId();
+    if (id == null) {
+      return create(item);
+    }
+
+    mapDB.replace(id, item);
+    return item;
+  }
+
   public List<T> findAll() {
     return new ArrayList<>(mapDB.values());
   }

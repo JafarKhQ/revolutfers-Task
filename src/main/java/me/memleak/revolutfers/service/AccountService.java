@@ -3,14 +3,10 @@ package me.memleak.revolutfers.service;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
 import me.memleak.revolutfers.repository.AccountMapRepository;
-import me.memleak.revolutfers.util.BalanceUtil;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.List;
-import java.util.function.DoubleFunction;
 
 import static me.memleak.revolutfers.util.BalanceUtil.toBankingBalance;
 
@@ -31,6 +27,10 @@ public class AccountService {
   public Account get(long id) {
     return repository.find(id)
         .orElseThrow(() -> new AccountNotFoundException("Cant find Account with id: {0}", id));
+  }
+
+  public Account update(Account account) {
+    return repository.update(account);
   }
 
   public Account create(double balance) {

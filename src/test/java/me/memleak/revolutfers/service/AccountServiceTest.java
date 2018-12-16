@@ -9,6 +9,7 @@ import me.memleak.revolutfers.repository.AccountMapRepository;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-
 
 public class AccountServiceTest {
 
@@ -41,29 +41,18 @@ public class AccountServiceTest {
   }
 
   @Test
-  public void toBankingBalance() {
-    BigDecimal result = service.toBankingBalance.apply(1.0000);
-    assertThat(result).isEqualByComparingTo(BigDecimal.ONE);
-
-    result = service.toBankingBalance.apply(0.69);
-    assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(0.69));
-
-    result = service.toBankingBalance.apply(1.688);
-    assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(1.69));
-
-    result = service.toBankingBalance.apply(2.683);
-    assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(2.69));
-  }
-
-  @Test
   public void create() {
     Account expected = new Account(ACCOUNT_ID, BigDecimal.ONE);
-    when(repository.create(any(BigDecimal.class))).thenReturn(expected);
+    when(repository.create(any(Account.class))).thenReturn(expected);
 
     Account result = service.create(1.00);
 
+    ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
+    verify(repository, only()).create(accountCaptor.capture());
+
     assertThat(result).isEqualTo(expected);
-    verify(repository, only()).create(any(BigDecimal.class));
+    assertThat(accountCaptor.getValue().getId()).isNull();
+    assertThat(accountCaptor.getValue().getBalance()).isEqualByComparingTo("1");
   }
 
   @Test

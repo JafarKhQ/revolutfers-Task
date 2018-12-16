@@ -3,8 +3,8 @@ package me.memleak.revolutfers.model;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class Account {
-  private Long id;
+public class Account extends ModelId {
+
   private BigDecimal balance;
 
   public Account() {
@@ -15,17 +15,13 @@ public class Account {
     this(id, BigDecimal.ZERO);
   }
 
+  public Account(BigDecimal balance) {
+    this(null, balance);
+  }
+
   public Account(Long id, BigDecimal balance) {
     this.id = id;
     this.balance = balance;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
-
-  public Long getId() {
-    return id;
   }
 
   public BigDecimal getBalance() {

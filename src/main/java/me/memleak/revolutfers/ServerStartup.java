@@ -4,6 +4,7 @@ import io.javalin.Javalin;
 import me.memleak.revolutfers.controller.AccountController;
 import me.memleak.revolutfers.controller.TransactionController;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
+import me.memleak.revolutfers.exception.TransactionNotFoundException;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
@@ -55,13 +56,15 @@ public class ServerStartup {
       });
 
       path("transaction", () -> {
-        post(transactionController::doTransaction);
+        post(transactionController::createTransaction);
       });
     });
   }
 
   private void setupExceptions(Javalin app) {
     app.exception(AccountNotFoundException.class, (e, ctx) -> {
+      ctx.status(HttpStatus.NOT_FOUND_404).result(e.getMessage());
+    }).exception(TransactionNotFoundException.class, (e, ctx) -> {
       ctx.status(HttpStatus.NOT_FOUND_404).result(e.getMessage());
     }).exception(Exception.class, (e, ctx) -> {
       ctx.status(HttpStatus.INTERNAL_SERVER_ERROR_500).result(e.getMessage());

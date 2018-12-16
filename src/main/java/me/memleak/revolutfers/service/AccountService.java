@@ -3,6 +3,7 @@ package me.memleak.revolutfers.service;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
 import me.memleak.revolutfers.repository.AccountMapRepository;
+import me.memleak.revolutfers.util.BalanceUtil;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -10,6 +11,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.function.DoubleFunction;
+
+import static me.memleak.revolutfers.util.BalanceUtil.toBankingBalance;
 
 @Singleton
 public class AccountService {
@@ -31,9 +34,8 @@ public class AccountService {
   }
 
   public Account create(double balance) {
-    return repository.create(toBankingBalance.apply(balance));
+    return repository.create(
+        new Account(toBankingBalance.apply(balance))
+    );
   }
-
-  DoubleFunction<BigDecimal> toBankingBalance =
-      (d) -> BigDecimal.valueOf(d).setScale(2, RoundingMode.CEILING);
 }

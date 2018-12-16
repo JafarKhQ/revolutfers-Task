@@ -10,6 +10,8 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import me.memleak.revolutfers.ServerStartup;
 import me.memleak.revolutfers.guicemodule.MyGuiceModule;
 import me.memleak.revolutfers.service.AccountService;
+import me.memleak.revolutfers.service.TransactionService;
+import me.memleak.revolutfers.service.TransactionsExecutorService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -84,6 +86,10 @@ public class BaseControllerIT {
       super.configure();
       bind(AccountService.class)
           .toInstance(mock(AccountService.class));
+      bind(TransactionService.class)
+          .toInstance(mock(TransactionService.class));
+      bind(TransactionsExecutorService.class)
+          .toInstance(mock(TransactionsExecutorService.class));
     }
   }
 }

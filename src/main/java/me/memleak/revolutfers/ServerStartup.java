@@ -1,6 +1,8 @@
 package me.memleak.revolutfers;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.javalin.Javalin;
+import io.javalin.json.JavalinJackson;
 import me.memleak.revolutfers.controller.AccountController;
 import me.memleak.revolutfers.controller.TransactionController;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
@@ -38,6 +40,7 @@ public class ServerStartup {
   }
 
   public ServerStartup boot(int port) {
+    jackson();
     setupRoutes(app);
     setupExceptions(app);
 
@@ -52,6 +55,11 @@ public class ServerStartup {
     app.stop();
   }
 
+  private void jackson() {
+    JavalinJackson.getObjectMapper()
+        .setSerializationInclusion(JsonInclude.Include.NON_NULL);
+  }
+
   private void setupRoutes(Javalin app) {
     app.routes(() -> {
       path("accounts", () -> {
@@ -62,8 +70,12 @@ public class ServerStartup {
         });
       });
 
-      path("transaction", () -> {
+      path("transactions", () -> {
+        get(transactionController::getAllTransactions);
         post(transactionController::createTransaction);
+        path(":id", () -> {
+          get(transactionController::getTransaction);
+        });
       });
     });
   }

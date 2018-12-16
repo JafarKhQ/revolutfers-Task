@@ -1,5 +1,7 @@
 package me.memleak.revolutfers.model;
 
+import java.util.Objects;
+
 public class TransactionRequest {
   private long sourceAccount;
   private long destinationAccount;
@@ -27,5 +29,20 @@ public class TransactionRequest {
 
   public void setAmount(double amount) {
     this.amount = amount;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof TransactionRequest)) return false;
+    TransactionRequest request = (TransactionRequest) o;
+    return sourceAccount == request.sourceAccount &&
+        destinationAccount == request.destinationAccount &&
+        Double.compare(request.amount, amount) == 0;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(sourceAccount, destinationAccount, amount);
   }
 }

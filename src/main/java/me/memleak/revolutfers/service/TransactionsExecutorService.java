@@ -86,16 +86,16 @@ public class TransactionsExecutorService {
         unlock(locks);
       }
     }
+
+    private Stream<Lock> lock(Account src, Account dest) {
+      return Stream.of(src, dest)
+          .sorted(comparing(ModelId::getId))
+          .map(Account::getLock)
+          .peek(Lock::lock);
+    }
+
+    private void unlock(Stream<Lock> locks) {
+      locks.forEach(Lock::unlock);
+    }
   };
-
-  private Stream<Lock> lock(Account src, Account dest) {
-    return Stream.of(src, dest)
-        .sorted(comparing(ModelId::getId))
-        .map(Account::getLock)
-        .peek(Lock::lock);
-  }
-
-  private void unlock(Stream<Lock> locks) {
-    locks.forEach(Lock::unlock);
-  }
 }

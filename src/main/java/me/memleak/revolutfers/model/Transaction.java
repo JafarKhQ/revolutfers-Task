@@ -1,6 +1,7 @@
 package me.memleak.revolutfers.model;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 public class Transaction extends ModelId {
 
@@ -21,6 +22,11 @@ public class Transaction extends ModelId {
   }
 
   public Transaction(long sourceId, long destinationId, BigDecimal amount) {
+    this(null, sourceId, destinationId, amount);
+  }
+
+  public Transaction(Long id, long sourceId, long destinationId, BigDecimal amount) {
+    this.id = id;
     this.amount = amount;
     this.sourceId = sourceId;
     this.destinationId = destinationId;
@@ -65,5 +71,23 @@ public class Transaction extends ModelId {
 
   public void setMessage(String message) {
     this.message = message;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof Transaction)) return false;
+    Transaction that = (Transaction) o;
+    return id.equals(that.id) &&
+        sourceId == that.sourceId &&
+        destinationId == that.destinationId &&
+        (amount.compareTo(that.amount) == 0) &&
+        status == that.status &&
+        Objects.equals(message, that.message);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, sourceId, destinationId, amount, status, message);
   }
 }

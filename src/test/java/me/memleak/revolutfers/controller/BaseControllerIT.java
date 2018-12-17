@@ -1,6 +1,7 @@
 package me.memleak.revolutfers.controller;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.mashape.unirest.http.HttpResponse;
@@ -8,6 +9,7 @@ import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import me.memleak.revolutfers.ServerStartup;
+import me.memleak.revolutfers.controller.model.ModelResponce;
 import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.guicemodule.MyGuiceModule;
 import me.memleak.revolutfers.service.AccountService;
@@ -27,12 +29,14 @@ public class BaseControllerIT {
 
   static Injector injector;
   private static ServerStartup server;
+  private static com.fasterxml.jackson.databind.ObjectMapper jacksonObjectMapper;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     injector = Guice.createInjector(new MockedGuiceModule());
     server = injector.getInstance(ServerStartup.class)
         .boot(port);
+    jacksonObjectMapper = injector.getInstance(com.fasterxml.jackson.databind.ObjectMapper.class);
 
     setupUnirest();
   }
@@ -42,26 +46,28 @@ public class BaseControllerIT {
     server.shutdown();
   }
 
+  <T> ModelResponce<T> get(String path, Class<T> clazz) throws UnirestException, IOException {
+    HttpResponse<String> response = Unirest.get(url + path)
+        .asString();
 
-  <T> T get(String path, Class<T> clazz) throws UnirestException {
-    HttpResponse<T> response = Unirest.get(url + path)
-        .asObject(clazz);
-
-    return response.getBody();
+    return toObject(response.getBody(), clazz);
   }
 
-  <T> T post(String path, Object body, Class<T> clazz) throws UnirestException {
-    HttpResponse<T> response = Unirest.post(url + path)
+  <T> ModelResponce<T> post(String path, Object body, Class<T> clazz) throws UnirestException, IOException {
+    HttpResponse<String> response = Unirest.post(url + path)
         .body(body)
-        .asObject(clazz);
+        .asString();
 
-    return response.getBody();
+    return toObject(response.getBody(), clazz);
+  }
+
+  private <T> ModelResponce<T> toObject(String body, Class<T> clazz) throws IOException {
+    JavaType t = jacksonObjectMapper.getTypeFactory().constructParametricType(ModelResponce.class, clazz);
+    return jacksonObjectMapper.readValue(body, t);
   }
 
   private static void setupUnirest() {
     Unirest.setObjectMapper(new ObjectMapper() {
-      private com.fasterxml.jackson.databind.ObjectMapper jacksonObjectMapper
-          = new com.fasterxml.jackson.databind.ObjectMapper();
 
       public <T> T readValue(String value, Class<T> valueType) {
         try {

@@ -1,10 +1,12 @@
 package me.memleak.revolutfers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import io.javalin.BadRequestResponse;
 import io.javalin.Javalin;
 import io.javalin.json.JavalinJackson;
 import me.memleak.revolutfers.controller.AccountController;
 import me.memleak.revolutfers.controller.TransactionController;
+import me.memleak.revolutfers.controller.model.ModelResponce;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.exception.TransactionNotFoundException;
 import me.memleak.revolutfers.service.QueueExecutor;
@@ -80,11 +82,13 @@ public class ServerStartup {
 
   private void setupExceptions(Javalin app) {
     app.exception(AccountNotFoundException.class, (e, ctx) -> {
-      ctx.status(HttpStatus.NOT_FOUND_404).result(e.getMessage());
+      ctx.status(HttpStatus.NOT_FOUND_404).json(ModelResponce.error(e.getMessage()));
     }).exception(TransactionNotFoundException.class, (e, ctx) -> {
-      ctx.status(HttpStatus.NOT_FOUND_404).result(e.getMessage());
+      ctx.status(HttpStatus.NOT_FOUND_404).json(ModelResponce.error(e.getMessage()));
+    }).exception(BadRequestResponse.class, (e, ctx) -> {
+      ctx.status(HttpStatus.BAD_REQUEST_400).json(ModelResponce.error(e.getMessage()));
     }).exception(Exception.class, (e, ctx) -> {
-      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR_500).result(e.getMessage());
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR_500).json(ModelResponce.error(e.getMessage()));
     });
   }
 }

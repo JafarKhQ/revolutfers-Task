@@ -1,4 +1,4 @@
-package me.memleak.revolutfers.model;
+package me.memleak.revolutfers.controller.model;
 
 import java.util.Objects;
 

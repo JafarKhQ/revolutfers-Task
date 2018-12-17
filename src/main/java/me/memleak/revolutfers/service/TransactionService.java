@@ -3,13 +3,12 @@ package me.memleak.revolutfers.service;
 import me.memleak.revolutfers.exception.TransactionNotFoundException;
 import me.memleak.revolutfers.model.ModelId;
 import me.memleak.revolutfers.model.Transaction;
-import me.memleak.revolutfers.model.TransactionRequest;
+import me.memleak.revolutfers.controller.model.TransactionRequest;
 import me.memleak.revolutfers.repository.TransactionMapRepository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;

@@ -3,12 +3,14 @@ package me.memleak.revolutfers.controller;
 import io.javalin.Context;
 import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.model.Transaction;
-import me.memleak.revolutfers.model.TransactionRequest;
+import me.memleak.revolutfers.controller.model.TransactionRequest;
 import me.memleak.revolutfers.service.TransactionService;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static me.memleak.revolutfers.controller.model.ModelResponce.ok;
 
 @Singleton
 public class TransactionController {
@@ -23,7 +25,7 @@ public class TransactionController {
   }
 
   public void getAllTransactions(Context ctx) {
-    ctx.json(service.getAll());
+    ctx.json(ok(service.getAll()));
   }
 
   public void getTransaction(Context ctx) {
@@ -31,7 +33,7 @@ public class TransactionController {
         .check(it -> it >= 0, "Id cant be negative.")
         .getOrThrow();
 
-    ctx.json(service.get(id));
+    ctx.json(ok(service.get(id)));
   }
 
   public void createTransaction(Context ctx) {
@@ -45,7 +47,7 @@ public class TransactionController {
     Transaction transaction = service.create(transactionRequest);
     transactionEvent.onNewTransaction(transaction);
 
-    ctx.json(transaction)
+    ctx.json(ok(transaction))
         .status(HttpStatus.ACCEPTED_202);
   }
 }

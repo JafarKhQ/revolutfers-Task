@@ -22,12 +22,12 @@ public class AccountControllerIT extends BaseControllerIT {
   @Before
   public void setUp() {
     service = injector.getInstance(AccountService.class);
+    reset(service);
   }
 
   @After
   public void tearDown() {
     verifyNoMoreInteractions(service);
-    reset(service);
   }
 
   @Test
@@ -36,7 +36,7 @@ public class AccountControllerIT extends BaseControllerIT {
     Account expected = new Account(ACCOUNT_ID, BigDecimal.ONE);
     when(service.create(anyDouble())).thenReturn(expected);
 
-    Account result = post("accounts", amount, Account.class);
+    Account result = post("accounts", amount, Account.class).getBody();
 
     assertThat(result).isEqualTo(expected);
     verify(service, only()).create(eq(amount));
@@ -46,7 +46,7 @@ public class AccountControllerIT extends BaseControllerIT {
   public void createAccount_invalidAmount() throws Exception {
     double amount = -1;
 
-    String result = post("accounts", amount, String.class);
+    String result = post("accounts", amount, Object.class).getMessage();
 
     assertThat(result).endsWith("Account balance cant be less than ZERO.");
   }
@@ -56,7 +56,7 @@ public class AccountControllerIT extends BaseControllerIT {
     List<Account> expected = new ArrayList<>();
     when(service.getAll()).thenReturn(expected);
 
-    Account[] result = get("accounts", Account[].class);
+    Account[] result = get("accounts", Account[].class).getBody();
 
     assertThat(result).hasSameElementsAs(expected);
     verify(service, only()).getAll();
@@ -67,7 +67,7 @@ public class AccountControllerIT extends BaseControllerIT {
     Account expected = new Account(ACCOUNT_ID);
     when(service.get(anyLong())).thenReturn(expected);
 
-    Account result = get("accounts/" + ACCOUNT_ID, Account.class);
+    Account result = get("accounts/" + ACCOUNT_ID, Account.class).getBody();
 
     assertThat(result).isEqualTo(expected);
     verify(service, only()).get(eq(ACCOUNT_ID));
@@ -75,7 +75,7 @@ public class AccountControllerIT extends BaseControllerIT {
 
   @Test
   public void getAccount_invalidId() throws Exception {
-    String result = get("accounts/-5", String.class);
+    String result = get("accounts/-5", Object.class).getMessage();
 
     assertThat(result).endsWith("Id cant be negative.");
   }
@@ -84,7 +84,7 @@ public class AccountControllerIT extends BaseControllerIT {
   public void getAccount_notFound() throws Exception {
     when(service.get(anyLong())).thenThrow(new AccountNotFoundException("bla bla"));
 
-    String result = get("accounts/" + ACCOUNT_ID, String.class);
+    String result = get("accounts/" + ACCOUNT_ID, Object.class).getMessage();
 
     assertThat(result).endsWith("bla bla");
     verify(service, only()).get(eq(ACCOUNT_ID));

@@ -1,11 +1,14 @@
 package me.memleak.revolutfers.controller;
 
 import io.javalin.Context;
+import me.memleak.revolutfers.controller.model.ModelResponce;
 import me.memleak.revolutfers.service.AccountService;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import static me.memleak.revolutfers.controller.model.ModelResponce.ok;
 
 @Singleton
 public class AccountController {
@@ -18,7 +21,7 @@ public class AccountController {
   }
 
   public void getAllAccounts(Context ctx) {
-    ctx.json(service.getAll());
+    ctx.json(ok(service.getAll()));
   }
 
   public void getAccount(Context ctx) {
@@ -26,7 +29,7 @@ public class AccountController {
         .check(it -> it >= 0, "Id cant be negative.")
         .getOrThrow();
 
-    ctx.json(service.get(id));
+    ctx.json(ok(service.get(id)));
   }
 
   public void createAccount(Context ctx) {
@@ -34,7 +37,7 @@ public class AccountController {
         .check(it -> it >= 0, "Account balance cant be less than ZERO.")
         .getOrThrow();
 
-    ctx.json(service.create(amount))
+    ctx.json(ok(service.create(amount)))
         .status(HttpStatus.CREATED_201);
   }
 }

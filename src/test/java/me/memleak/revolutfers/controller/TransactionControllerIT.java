@@ -3,7 +3,7 @@ package me.memleak.revolutfers.controller;
 import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.exception.TransactionNotFoundException;
 import me.memleak.revolutfers.model.Transaction;
-import me.memleak.revolutfers.model.TransactionRequest;
+import me.memleak.revolutfers.controller.model.TransactionRequest;
 import me.memleak.revolutfers.service.TransactionService;
 import org.junit.After;
 import org.junit.Before;
@@ -28,12 +28,12 @@ public class TransactionControllerIT extends BaseControllerIT {
   public void setUp() {
     event = injector.getInstance(NewTransactionEvent.class);
     service = injector.getInstance(TransactionService.class);
+    reset(service, event);
   }
 
   @After
   public void tearDown() {
     verifyNoMoreInteractions(service, event);
-    reset(service, event);
   }
 
   @Test
@@ -46,7 +46,7 @@ public class TransactionControllerIT extends BaseControllerIT {
     Transaction expected = new Transaction(TRANSACTION_ID, 0, 1, BigDecimal.ONE);
     when(service.create(any(TransactionRequest.class))).thenReturn(expected);
 
-    Transaction result = post("transactions", request, Transaction.class);
+    Transaction result = post("transactions", request, Transaction.class).getBody();
 
     verify(service, only()).create(eq(request));
     verify(event, only()).onNewTransaction(eq(expected));
@@ -60,7 +60,7 @@ public class TransactionControllerIT extends BaseControllerIT {
     request.setDestinationAccount(1);
     request.setAmount(1);
 
-    String result = post("transactions", request, String.class);
+    String result = post("transactions", request, Object.class).getMessage();
 
 
     assertThat(result).endsWith("Source Account cant be negative.");
@@ -73,7 +73,7 @@ public class TransactionControllerIT extends BaseControllerIT {
     request.setDestinationAccount(-1);
     request.setAmount(1);
 
-    String result = post("transactions", request, String.class);
+    String result = post("transactions", request, Object.class).getMessage();
 
 
     assertThat(result).endsWith("Destination Account cant be negative.");
@@ -86,7 +86,7 @@ public class TransactionControllerIT extends BaseControllerIT {
     request.setDestinationAccount(0);
     request.setAmount(1);
 
-    String result = post("transactions", request, String.class);
+    String result = post("transactions", request, Object.class).getMessage();
 
 
     assertThat(result).endsWith("Source and Destination Accounts cant be same.");
@@ -99,7 +99,7 @@ public class TransactionControllerIT extends BaseControllerIT {
     request.setDestinationAccount(1);
     request.setAmount(-1);
 
-    String result = post("transactions", request, String.class);
+    String result = post("transactions", request, Object.class).getMessage();
 
 
     assertThat(result).endsWith("Amount must be greater than zero.");
@@ -110,7 +110,7 @@ public class TransactionControllerIT extends BaseControllerIT {
     List<Transaction> expected = new ArrayList<>();
     when(service.getAll()).thenReturn(expected);
 
-    Transaction[] result = get("transactions", Transaction[].class);
+    Transaction[] result = get("transactions", Transaction[].class).getBody();
 
     assertThat(result).hasSameElementsAs(expected);
     verify(service, only()).getAll();
@@ -121,7 +121,7 @@ public class TransactionControllerIT extends BaseControllerIT {
     Transaction expected = new Transaction(TRANSACTION_ID, 0, 1, BigDecimal.ONE);
     when(service.get(anyLong())).thenReturn(expected);
 
-    Transaction result = get("transactions/" + TRANSACTION_ID, Transaction.class);
+    Transaction result = get("transactions/" + TRANSACTION_ID, Transaction.class).getBody();
 
     assertThat(result).isEqualTo(expected);
     verify(service, only()).get(eq(TRANSACTION_ID));
@@ -129,7 +129,7 @@ public class TransactionControllerIT extends BaseControllerIT {
 
   @Test
   public void getTransaction_invalidId() throws Exception {
-    String result = get("transactions/-5", String.class);
+    String result = get("transactions/-5", Object.class).getMessage();
 
     assertThat(result).endsWith("Id cant be negative.");
   }
@@ -138,7 +138,7 @@ public class TransactionControllerIT extends BaseControllerIT {
   public void getTransaction_notFound() throws Exception {
     when(service.get(anyLong())).thenThrow(new TransactionNotFoundException("bla bla"));
 
-    String result = get("transactions/" + TRANSACTION_ID, String.class);
+    String result = get("transactions/" + TRANSACTION_ID, Object.class).getMessage();
 
     assertThat(result).endsWith("bla bla");
     verify(service, only()).get(eq(TRANSACTION_ID));

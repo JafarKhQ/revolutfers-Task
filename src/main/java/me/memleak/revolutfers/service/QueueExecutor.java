@@ -11,6 +11,9 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Singleton
 public class QueueExecutor implements NewTransactionEvent {
@@ -24,7 +27,8 @@ public class QueueExecutor implements NewTransactionEvent {
   @Inject
   public QueueExecutor(TransactionProcessor transactionProcessor) {
     this.queue = new ConcurrentLinkedQueue<>();
-    this.executor = Executors.newFixedThreadPool(6);
+    // cant find an easy way to implement a multi threads processor.
+    this.executor = Executors.newFixedThreadPool(1);
 
     this.transactionProcessor = transactionProcessor;
   }

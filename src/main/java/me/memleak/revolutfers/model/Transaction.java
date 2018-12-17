@@ -90,4 +90,11 @@ public class Transaction extends ModelId {
   public int hashCode() {
     return Objects.hash(id, sourceId, destinationId, amount, status, message);
   }
+
+  @Override
+  public String toString() {
+    return "Transaction{" +
+        "id=" + id +
+        '}';
+  }
 }

@@ -30,6 +30,11 @@ public class TransactionProcessor {
 
   public void process(Transaction transaction) {
     LOGGER.info("Start processing Transaction {}", transaction.getId());
+    try {
+      Thread.sleep(1000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
     Account src = null, dest = null;
     try {
       src = accountService.get(transaction.getSourceId());

@@ -45,8 +45,6 @@ public class ServerStartup {
     setupExceptions(app);
 
     app.start(port);
-    queueExecutor.start();
-
     return this;
   }
 

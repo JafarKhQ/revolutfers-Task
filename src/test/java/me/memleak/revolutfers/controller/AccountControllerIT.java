@@ -1,5 +1,6 @@
 package me.memleak.revolutfers.controller;
 
+import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
 import me.memleak.revolutfers.service.AccountService;
@@ -32,21 +33,22 @@ public class AccountControllerIT extends BaseControllerIT {
 
   @Test
   public void createAccount() throws Exception {
-    double amount = 1.000;
     Account expected = new Account(ACCOUNT_ID, BigDecimal.ONE);
-    when(service.create(anyDouble())).thenReturn(expected);
+    when(service.create(any(AccountRequest.class))).thenReturn(expected);
 
-    Account result = post("accounts", amount, Account.class).getBody();
+    AccountRequest request = new AccountRequest();
+    request.setBalance(1.000);
+    Account result = post("accounts", request, Account.class).getBody();
 
     assertThat(result).isEqualTo(expected);
-    verify(service, only()).create(eq(amount));
+    verify(service, only()).create(eq(request));
   }
 
   @Test
   public void createAccount_invalidAmount() throws Exception {
-    double amount = -1;
-
-    String result = post("accounts", amount, Object.class).getMessage();
+    AccountRequest request = new AccountRequest();
+    request.setBalance(-1);
+    String result = post("accounts", request, Object.class).getMessage();
 
     assertThat(result).endsWith("Account balance cant be less than ZERO.");
   }

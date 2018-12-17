@@ -1,5 +1,6 @@
 package me.memleak.revolutfers.service;
 
+import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
 import me.memleak.revolutfers.repository.AccountMapRepository;
@@ -33,9 +34,9 @@ public class AccountService {
     return repository.update(account);
   }
 
-  public Account create(double balance) {
+  public Account create(AccountRequest request) {
     return repository.create(
-        new Account(toBankingBalance.apply(balance))
+        new Account(toBankingBalance.apply(request.getBalance()))
     );
   }
 }

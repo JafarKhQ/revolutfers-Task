@@ -1,6 +1,7 @@
 package me.memleak.revolutfers.service;
 
 import com.google.inject.AbstractModule;
+import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
 import me.memleak.revolutfers.repository.AccountMapRepository;
@@ -40,7 +41,9 @@ public class AccountServiceTest extends BaseServiceTest {
     Account expected = new Account(ACCOUNT_ID, BigDecimal.ONE);
     when(repository.create(any(Account.class))).thenReturn(expected);
 
-    Account result = service.create(1.00);
+    AccountRequest request = new AccountRequest();
+    request.setBalance(1.00);
+    Account result = service.create(request);
 
     ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
     verify(repository, only()).create(accountCaptor.capture());

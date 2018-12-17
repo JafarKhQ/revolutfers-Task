@@ -1,6 +1,7 @@
 package me.memleak.revolutfers.controller;
 
 import io.javalin.Context;
+import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.controller.model.ModelResponce;
 import me.memleak.revolutfers.service.AccountService;
 import org.eclipse.jetty.http.HttpStatus;
@@ -33,11 +34,11 @@ public class AccountController {
   }
 
   public void createAccount(Context ctx) {
-    double amount = ctx.validatedBodyAsClass(Double.class)
-        .check(it -> it >= 0, "Account balance cant be less than ZERO.")
+    AccountRequest request = ctx.validatedBodyAsClass(AccountRequest.class)
+        .check(it -> it.getBalance() >= 0, "Account balance cant be less than ZERO.")
         .getOrThrow();
 
-    ctx.json(ok(service.create(amount)))
+    ctx.json(ok(service.create(request)))
         .status(HttpStatus.CREATED_201);
   }
 }

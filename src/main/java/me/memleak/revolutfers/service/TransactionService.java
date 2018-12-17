@@ -1,6 +1,7 @@
 package me.memleak.revolutfers.service;
 
 import me.memleak.revolutfers.exception.TransactionNotFoundException;
+import me.memleak.revolutfers.model.ModelId;
 import me.memleak.revolutfers.model.Transaction;
 import me.memleak.revolutfers.model.TransactionRequest;
 import me.memleak.revolutfers.repository.TransactionMapRepository;
@@ -8,7 +9,10 @@ import me.memleak.revolutfers.repository.TransactionMapRepository;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static java.util.Comparator.comparing;
+import static java.util.stream.Collectors.toList;
 import static me.memleak.revolutfers.util.BalanceUtil.toBankingBalance;
 
 @Singleton
@@ -26,7 +30,9 @@ public class TransactionService {
   }
 
   public List<Transaction> getUnprocessed() {
-    return repository.findUnprocessed();
+    return repository.findUnprocessed().stream()
+        .sorted(comparing(ModelId::getId))
+        .collect(toList());
   }
 
   public Transaction update(Transaction transaction) {

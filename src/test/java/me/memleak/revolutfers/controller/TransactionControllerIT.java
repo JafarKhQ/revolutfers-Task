@@ -1,5 +1,6 @@
 package me.memleak.revolutfers.controller;
 
+import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.exception.TransactionNotFoundException;
 import me.memleak.revolutfers.model.Transaction;
 import me.memleak.revolutfers.model.TransactionRequest;
@@ -21,16 +22,18 @@ public class TransactionControllerIT extends BaseControllerIT {
   private static final Long TRANSACTION_ID = 0L;
 
   private TransactionService service;
+  private NewTransactionEvent event;
 
   @Before
   public void setUp() {
+    event = injector.getInstance(NewTransactionEvent.class);
     service = injector.getInstance(TransactionService.class);
   }
 
   @After
   public void tearDown() {
-    verifyNoMoreInteractions(service);
-    reset(service);
+    verifyNoMoreInteractions(service, event);
+    reset(service, event);
   }
 
   @Test
@@ -46,6 +49,7 @@ public class TransactionControllerIT extends BaseControllerIT {
     Transaction result = post("transactions", request, Transaction.class);
 
     verify(service, only()).create(eq(request));
+    verify(event, only()).onNewTransaction(eq(expected));
     assertThat(result).isEqualTo(expected);
   }
 

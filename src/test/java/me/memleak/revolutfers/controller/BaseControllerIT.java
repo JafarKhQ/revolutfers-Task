@@ -8,10 +8,11 @@ import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import me.memleak.revolutfers.ServerStartup;
+import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.guicemodule.MyGuiceModule;
 import me.memleak.revolutfers.service.AccountService;
+import me.memleak.revolutfers.service.QueueExecutor;
 import me.memleak.revolutfers.service.TransactionService;
-import me.memleak.revolutfers.service.TransactionsExecutorService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -83,13 +84,15 @@ public class BaseControllerIT {
   private static class MockedGuiceModule extends MyGuiceModule {
     @Override
     protected void configure() {
-      super.configure();
+      bindApp();
       bind(AccountService.class)
           .toInstance(mock(AccountService.class));
       bind(TransactionService.class)
           .toInstance(mock(TransactionService.class));
-      bind(TransactionsExecutorService.class)
-          .toInstance(mock(TransactionsExecutorService.class));
+      bind(QueueExecutor.class)
+          .toInstance(mock(QueueExecutor.class));
+      bind(NewTransactionEvent.class)
+          .toInstance(mock(NewTransactionEvent.class));
     }
   }
 }

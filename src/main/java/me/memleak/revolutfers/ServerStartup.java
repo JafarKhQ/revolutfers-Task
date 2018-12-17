@@ -7,7 +7,7 @@ import me.memleak.revolutfers.controller.AccountController;
 import me.memleak.revolutfers.controller.TransactionController;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.exception.TransactionNotFoundException;
-import me.memleak.revolutfers.service.TransactionsExecutorService;
+import me.memleak.revolutfers.service.QueueExecutor;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
@@ -22,17 +22,17 @@ public class ServerStartup {
   private final Javalin app;
   private final AccountController accountController;
   private final TransactionController transactionController;
-  private final TransactionsExecutorService transactionsExecutorService;
+  private final QueueExecutor queueExecutor;
 
   @Inject
   public ServerStartup(Javalin app,
                        AccountController accountController,
                        TransactionController transactionController,
-                       TransactionsExecutorService transactionsExecutorService) {
+                       QueueExecutor queueExecutor) {
     this.app = app;
     this.accountController = accountController;
     this.transactionController = transactionController;
-    this.transactionsExecutorService = transactionsExecutorService;
+    this.queueExecutor = queueExecutor;
   }
 
   public ServerStartup boot() {
@@ -45,13 +45,13 @@ public class ServerStartup {
     setupExceptions(app);
 
     app.start(port);
-    transactionsExecutorService.start();
+    queueExecutor.start();
 
     return this;
   }
 
   public void shutdown() {
-    transactionsExecutorService.stop();
+    queueExecutor.stop();
     app.stop();
   }
 

@@ -1,6 +1,8 @@
 package me.memleak.revolutfers.controller;
 
 import io.javalin.Context;
+import me.memleak.revolutfers.events.NewTransactionEvent;
+import me.memleak.revolutfers.model.Transaction;
 import me.memleak.revolutfers.model.TransactionRequest;
 import me.memleak.revolutfers.service.TransactionService;
 import org.eclipse.jetty.http.HttpStatus;
@@ -12,10 +14,12 @@ import javax.inject.Singleton;
 public class TransactionController {
 
   private final TransactionService service;
+  private final NewTransactionEvent transactionEvent;
 
   @Inject
-  public TransactionController(TransactionService service) {
+  public TransactionController(TransactionService service, NewTransactionEvent transactionEvent) {
     this.service = service;
+    this.transactionEvent = transactionEvent;
   }
 
   public void getAllTransactions(Context ctx) {
@@ -38,7 +42,10 @@ public class TransactionController {
         .check(t -> t.getAmount() > 0.0, "Amount must be greater than zero.")
         .getOrThrow();
 
-    ctx.json(service.create(transactionRequest))
+    Transaction transaction = service.create(transactionRequest);
+    transactionEvent.onNewTransaction(transaction);
+
+    ctx.json(transaction)
         .status(HttpStatus.ACCEPTED_202);
   }
 }

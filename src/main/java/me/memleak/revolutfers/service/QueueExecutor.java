@@ -8,7 +8,10 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Queue;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class QueueExecutor implements NewTransactionEvent {
@@ -25,6 +28,7 @@ public class QueueExecutor implements NewTransactionEvent {
   @Inject
   public QueueExecutor(TransactionProcessor transactionProcessor) {
     this.queue = new LinkedBlockingQueue<>();
+//    this.queue = new ConcurrentLinkedQueue<>();
     this.executor = Executors.newScheduledThreadPool(6);
 
     this.transactionProcessor = transactionProcessor;
@@ -32,7 +36,7 @@ public class QueueExecutor implements NewTransactionEvent {
 
   public void start() {
     LOGGER.info("Starting executor");
-    executor.scheduleAtFixedRate(new A(), INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
+    executor.scheduleAtFixedRate(transactionTask, INITIAL_DELAY, PERIOD, TimeUnit.SECONDS);
   }
 
   public void stop() {
@@ -40,7 +44,7 @@ public class QueueExecutor implements NewTransactionEvent {
     executor.shutdown();
   }
 
-  class A implements Runnable {
+  private Runnable transactionTask = new Runnable() {
     @Override
     public void run() {
       if (queue.isEmpty()) {
@@ -48,9 +52,9 @@ public class QueueExecutor implements NewTransactionEvent {
         return;
       }
 
-      Transaction t = queue.poll();
-      LOGGER.info("Thread {} processing Transaction {}.", Thread.currentThread().getName(), t.getId());
-      transactionProcessor.process(queue.poll());
+      Transaction transaction = queue.poll();
+      LOGGER.info("Thread {} processing Transaction {}.", Thread.currentThread().getName(), transaction.getId());
+      transactionProcessor.process(transaction);
     }
   };
 

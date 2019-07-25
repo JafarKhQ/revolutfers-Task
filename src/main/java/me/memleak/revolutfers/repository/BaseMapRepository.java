@@ -3,12 +3,13 @@ package me.memleak.revolutfers.repository;
 import me.memleak.revolutfers.model.ModelId;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class BaseMapRepository<T extends ModelId> {
 
   private final AtomicLong idGenerator = new AtomicLong();
-  private final Map<Long, T> mapDB = new HashMap<>();
+  private final Map<Long, T> mapDB = new ConcurrentHashMap<>();
 
   public T create(T item) {
     final long id = getNextId();

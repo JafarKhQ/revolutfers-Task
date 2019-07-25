@@ -25,10 +25,10 @@ public class QueueExecutor implements NewTransactionEvent {
   private final TransactionProcessor transactionProcessor;
 
   @Inject
-  public QueueExecutor(TransactionProcessor transactionProcessor) {
-    this.queue = new ConcurrentLinkedQueue<>();
+  public QueueExecutor(TransactionProcessor transactionProcessor, Queue<Transaction> queue) {
+    this.queue = queue;
     // cant find an easy way to implement a multi threads processor.
-    this.executor = Executors.newFixedThreadPool(1);
+    this.executor = Executors.newFixedThreadPool(4);
 
     this.transactionProcessor = transactionProcessor;
   }
@@ -41,9 +41,7 @@ public class QueueExecutor implements NewTransactionEvent {
   private Runnable transactionTask = new Runnable() {
     @Override
     public void run() {
-      Transaction transaction = queue.poll();
-      LOGGER.info("Thread {} processing Transaction {}.", Thread.currentThread().getName(), transaction.getId());
-      transactionProcessor.process(transaction);
+      transactionProcessor.processNext();
     }
   };
 

@@ -1,12 +1,13 @@
 package me.memleak.revolutfers.service;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.TypeLiteral;
 import me.memleak.revolutfers.model.Transaction;
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Queue;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -32,15 +33,16 @@ public class QueueExecutorTest extends BaseServiceTest {
 
   @Test
   public void transactionsProcessedInOrder() throws Exception {
-    InOrder orderVerifier = inOrder(processor);
     List<Transaction> transactions = Stream.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
         .map(n -> new Transaction(Long.valueOf(n), 0, 0, BigDecimal.ONE))
         .collect(toList());
 
     transactions.forEach(executor::onNewTransaction);
 
-    transactions.forEach(t ->
-        orderVerifier.verify(processor).process(eq(t)));
+    // todo: remove sleep and correctly wait until all threads finished
+    Thread.sleep(100);
+
+    verify(processor, times(10)).processNext();
   }
 
   @Override
@@ -48,6 +50,8 @@ public class QueueExecutorTest extends BaseServiceTest {
     return new AbstractModule() {
       @Override
       protected void configure() {
+        bind(new TypeLiteral<Queue<Transaction>>() {
+        }).toInstance(mock(Queue.class));
         bind(TransactionProcessor.class)
             .toInstance(mock(TransactionProcessor.class));
       }

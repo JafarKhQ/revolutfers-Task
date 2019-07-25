@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.text.MessageFormat;
+import java.util.Queue;
 import java.util.concurrent.locks.Lock;
 import java.util.stream.Stream;
 
@@ -19,16 +20,19 @@ import static java.util.Comparator.comparing;
 public class TransactionProcessor {
   private static final Logger LOGGER = LoggerFactory.getLogger(TransactionProcessor.class);
 
+  private final Queue<Transaction> queue;
   private final AccountService accountService;
   private final TransactionService transactionService;
 
   @Inject
-  public TransactionProcessor(AccountService accountService, TransactionService transactionService) {
+  public TransactionProcessor(AccountService accountService, TransactionService transactionService, Queue<Transaction> queue) {
+    this.queue = queue;
     this.accountService = accountService;
     this.transactionService = transactionService;
   }
 
-  public void process(Transaction transaction) {
+  public void processNext() {
+    Transaction transaction = queue.poll();
     LOGGER.info("Start processing Transaction {}", transaction.getId());
 
     Account src = null, dest = null;

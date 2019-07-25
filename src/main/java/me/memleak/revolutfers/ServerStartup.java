@@ -1,9 +1,9 @@
 package me.memleak.revolutfers;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.javalin.BadRequestResponse;
 import io.javalin.Javalin;
-import io.javalin.json.JavalinJackson;
+import io.javalin.http.BadRequestResponse;
+import io.javalin.plugin.json.JavalinJackson;
 import me.memleak.revolutfers.controller.AccountController;
 import me.memleak.revolutfers.controller.TransactionController;
 import me.memleak.revolutfers.controller.model.ModelResponce;

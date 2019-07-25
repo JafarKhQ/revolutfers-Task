@@ -1,6 +1,6 @@
 package me.memleak.revolutfers.controller;
 
-import io.javalin.Context;
+import io.javalin.http.Context;
 import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.controller.model.ModelResponce;
 import me.memleak.revolutfers.service.AccountService;
@@ -26,17 +26,17 @@ public class AccountController {
   }
 
   public void getAccount(Context ctx) {
-    long id = ctx.validatedPathParam("id").asLong()
+    long id = ctx.pathParam("id", Long.class)
         .check(it -> it >= 0, "Id cant be negative.")
-        .getOrThrow();
+        .get();
 
     ctx.json(ok(service.get(id)));
   }
 
   public void createAccount(Context ctx) {
-    AccountRequest request = ctx.validatedBodyAsClass(AccountRequest.class)
+    AccountRequest request = ctx.bodyValidator(AccountRequest.class)
         .check(it -> it.getBalance() >= 0, "Account balance cant be less than ZERO.")
-        .getOrThrow();
+        .get();
 
     ctx.json(ok(service.create(request)))
         .status(HttpStatus.CREATED_201);

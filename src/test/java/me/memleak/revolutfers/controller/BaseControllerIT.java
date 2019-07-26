@@ -14,7 +14,6 @@ import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.guicemodule.MyGuiceModule;
 import me.memleak.revolutfers.service.AccountService;
 import me.memleak.revolutfers.service.QueueExecutor;
-import me.memleak.revolutfers.service.TransactionService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -93,8 +92,6 @@ public class BaseControllerIT {
       bindApp();
       bind(AccountService.class)
           .toInstance(mock(AccountService.class));
-      bind(TransactionService.class)
-          .toInstance(mock(TransactionService.class));
       bind(QueueExecutor.class)
           .toInstance(mock(QueueExecutor.class));
       bind(NewTransactionEvent.class)

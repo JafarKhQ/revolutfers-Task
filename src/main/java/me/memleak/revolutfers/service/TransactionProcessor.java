@@ -22,31 +22,29 @@ public class TransactionProcessor {
 
   private final Queue<Transaction> queue;
   private final AccountService accountService;
-  private final TransactionService transactionService;
 
   @Inject
-  public TransactionProcessor(AccountService accountService, TransactionService transactionService, Queue<Transaction> queue) {
+  public TransactionProcessor(AccountService accountService, Queue<Transaction> queue) {
     this.queue = queue;
     this.accountService = accountService;
-    this.transactionService = transactionService;
   }
 
-  public void processNext() {
+  public Transaction processNext() {
     Transaction transaction = queue.poll();
-    LOGGER.info("Start processing Transaction {}", transaction.getId());
+    assert transaction != null; // shouldn't happen
+    LOGGER.info("Start processing Transaction {}", transaction.toString());
 
-    Account src = null, dest = null;
+    Account src = null, dest;
     try {
       src = accountService.get(transaction.getSourceId());
       dest = accountService.get(transaction.getDestinationId());
     } catch (AccountNotFoundException e) {
       String notFound = src == null ? "Source" : "Destination";
-      LOGGER.info("Account {} Not found", notFound);
+      LOGGER.info("The {} account is Not found.", notFound);
 
       transaction.setMessage(MessageFormat.format("The {0} Account is not found.", notFound));
       transaction.setStatus(Transaction.TransactionStatus.FAILED);
-      transactionService.update(transaction);
-      return;
+      return transaction;
     }
 
     final Stream<Lock> locks = lock(src, dest);
@@ -65,11 +63,11 @@ public class TransactionProcessor {
 
         transaction.setStatus(Transaction.TransactionStatus.EXECUTED);
       }
-
-      transactionService.update(transaction);
     } finally {
       unlock(locks);
     }
+
+    return transaction;
   }
 
   private Stream<Lock> lock(Account src, Account dest) {

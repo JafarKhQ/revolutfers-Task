@@ -3,7 +3,7 @@ package me.memleak.revolutfers.model;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class Transaction extends ModelId {
+public class Transaction {
 
   public enum TransactionStatus {
     FAILED,
@@ -18,15 +18,10 @@ public class Transaction extends ModelId {
   private String message;
 
   public Transaction() {
-    // make jackson happy :/
+    this(0, 0, BigDecimal.ZERO);
   }
 
   public Transaction(long sourceId, long destinationId, BigDecimal amount) {
-    this(null, sourceId, destinationId, amount);
-  }
-
-  public Transaction(Long id, long sourceId, long destinationId, BigDecimal amount) {
-    this.id = id;
     this.amount = amount;
     this.sourceId = sourceId;
     this.destinationId = destinationId;
@@ -78,8 +73,7 @@ public class Transaction extends ModelId {
     if (this == o) return true;
     if (!(o instanceof Transaction)) return false;
     Transaction that = (Transaction) o;
-    return id.equals(that.id) &&
-        sourceId == that.sourceId &&
+    return sourceId == that.sourceId &&
         destinationId == that.destinationId &&
         (amount.compareTo(that.amount) == 0) &&
         status == that.status &&
@@ -88,13 +82,17 @@ public class Transaction extends ModelId {
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, sourceId, destinationId, amount, status, message);
+    return Objects.hash(sourceId, destinationId, amount, status, message);
   }
 
   @Override
   public String toString() {
     return "Transaction{" +
-        "id=" + id +
+        "sourceId=" + sourceId +
+        ", destinationId=" + destinationId +
+        ", amount=" + amount +
+        ", status=" + status +
+        ", message='" + message + '\'' +
         '}';
   }
 }

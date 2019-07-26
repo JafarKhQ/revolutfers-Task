@@ -6,14 +6,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.*;
 
 @Singleton
 public class QueueExecutor implements NewTransactionEvent {
@@ -25,32 +21,27 @@ public class QueueExecutor implements NewTransactionEvent {
   private final TransactionProcessor transactionProcessor;
 
   @Inject
-  public QueueExecutor(TransactionProcessor transactionProcessor, Queue<Transaction> queue) {
+  public QueueExecutor(TransactionProcessor transactionProcessor, Queue<Transaction> queue,
+                       @Named("transactions.thread.size") int nThreads) {
     this.queue = queue;
-    // cant find an easy way to implement a multi threads processor.
-    this.executor = Executors.newFixedThreadPool(4);
-
+    this.executor = Executors.newFixedThreadPool(nThreads);
     this.transactionProcessor = transactionProcessor;
   }
 
   public void stop() {
     LOGGER.info("Stopping executor");
     executor.shutdown();
+    try {
+      executor.awaitTermination(1, TimeUnit.SECONDS);
+    } catch (InterruptedException e) {
+      // ignore it
+    }
   }
 
-  private Runnable transactionTask = new Runnable() {
-    @Override
-    public void run() {
-      transactionProcessor.processNext();
-    }
-  };
-
   @Override
-  public void onNewTransaction(Transaction transaction) {
-    if (transaction != null) {
-      LOGGER.info("New Transaction {} added to the queue.", transaction.getId());
+  public Future<Transaction> onNewTransaction(Transaction transaction) {
+      LOGGER.info("The new Transaction added to the queue.");
       queue.add(transaction);
-      executor.execute(transactionTask);
-    }
+      return executor.submit(transactionProcessor::processNext);
   }
 }

@@ -2,7 +2,9 @@ package me.memleak.revolutfers.events;
 
 import me.memleak.revolutfers.model.Transaction;
 
+import java.util.concurrent.Future;
+
 public interface NewTransactionEvent {
 
-  void onNewTransaction(Transaction transaction);
+  Future<Transaction> onNewTransaction(Transaction transaction);
 }

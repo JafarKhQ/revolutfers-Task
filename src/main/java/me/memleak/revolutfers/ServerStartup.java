@@ -71,11 +71,7 @@ public class ServerStartup {
       });
 
       path("transactions", () -> {
-        get(transactionController::getAllTransactions);
         post(transactionController::createTransaction);
-        path(":id", () -> {
-          get(transactionController::getTransaction);
-        });
       });
     });
   }

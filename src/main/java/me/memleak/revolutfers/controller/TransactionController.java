@@ -1,39 +1,32 @@
 package me.memleak.revolutfers.controller;
 
 import io.javalin.http.Context;
+import me.memleak.revolutfers.controller.model.ModelResponce;
+import me.memleak.revolutfers.controller.model.TransactionRequest;
 import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.model.Transaction;
-import me.memleak.revolutfers.controller.model.TransactionRequest;
-import me.memleak.revolutfers.service.TransactionService;
+import me.memleak.revolutfers.util.TransactionFactory;
 import org.eclipse.jetty.http.HttpStatus;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
+import static me.memleak.revolutfers.controller.model.ModelResponce.error;
 import static me.memleak.revolutfers.controller.model.ModelResponce.ok;
 
 @Singleton
 public class TransactionController {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TransactionController.class);
 
-  private final TransactionService service;
   private final NewTransactionEvent transactionEvent;
 
   @Inject
-  public TransactionController(TransactionService service, NewTransactionEvent transactionEvent) {
-    this.service = service;
+  public TransactionController(NewTransactionEvent transactionEvent) {
     this.transactionEvent = transactionEvent;
-  }
-
-  public void getAllTransactions(Context ctx) {
-    ctx.json(ok(service.getAll()));
-  }
-
-  public void getTransaction(Context ctx) {
-    long id = ctx.pathParam("id", Long.class)
-        .check(it -> it >= 0, "Id cant be negative.")
-        .get();
-
-    ctx.json(ok(service.get(id)));
   }
 
   public void createTransaction(Context ctx) {
@@ -44,10 +37,21 @@ public class TransactionController {
         .check(t -> t.getAmount() > 0.0, "Amount must be greater than zero.")
         .get();
 
-    Transaction transaction = service.create(transactionRequest);
-    transactionEvent.onNewTransaction(transaction);
+    /*
+     * For the sake of simplicity (and since all accounts are in memory so the Transaction will be executed quickly)
+     * Im going to block the request until the Transaction get executed. :)
+     */
+    Future<Transaction> result = transactionEvent.onNewTransaction(TransactionFactory.from(transactionRequest));
 
-    ctx.json(ok(transaction))
-        .status(HttpStatus.ACCEPTED_202);
+    try {
+      Transaction transaction = result.get();
+      ctx.json(ok(transaction))
+          .status(HttpStatus.OK_200);
+    } catch (InterruptedException | ExecutionException e) {
+      // todo: handle this better
+      LOGGER.error("Error execution the transaction", e);
+      ctx.json(ModelResponce.error("Error execution the transaction"))
+          .status(HttpStatus.INTERNAL_SERVER_ERROR_500);
+    }
   }
 }

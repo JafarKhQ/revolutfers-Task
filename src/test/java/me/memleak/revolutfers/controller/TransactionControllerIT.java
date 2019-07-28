@@ -1,31 +1,26 @@
 package me.memleak.revolutfers.controller;
 
-import me.memleak.revolutfers.events.NewTransactionEvent;
-import me.memleak.revolutfers.exception.TransactionNotFoundException;
-import me.memleak.revolutfers.model.Transaction;
 import me.memleak.revolutfers.controller.model.TransactionRequest;
+import me.memleak.revolutfers.events.NewTransactionEvent;
+import me.memleak.revolutfers.model.Transaction;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class TransactionControllerIT extends BaseControllerIT {
-  private static final Long TRANSACTION_ID = 0L;
 
   private NewTransactionEvent event;
 
   @Before
   public void setUp() {
     event = injector.getInstance(NewTransactionEvent.class);
-    reset(event);
   }
 
   @After
@@ -41,6 +36,8 @@ public class TransactionControllerIT extends BaseControllerIT {
     request.setAmount(1);
 
     Transaction expected = new Transaction(0, 1, BigDecimal.ONE);
+    when(event.onNewTransaction(any(Transaction.class))).
+        thenReturn(CompletableFuture.completedFuture(expected));
 
     Transaction result = post("transactions", request, Transaction.class).getBody();
 

@@ -9,7 +9,7 @@ import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import me.memleak.revolutfers.ServerStartup;
-import me.memleak.revolutfers.controller.model.ModelResponce;
+import me.memleak.revolutfers.controller.model.ModelResponse;
 import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.guicemodule.MyGuiceModule;
 import me.memleak.revolutfers.service.AccountService;
@@ -45,14 +45,14 @@ public class BaseControllerIT {
     server.shutdown();
   }
 
-  <T> ModelResponce<T> get(String path, Class<T> clazz) throws UnirestException, IOException {
+  <T> ModelResponse<T> get(String path, Class<T> clazz) throws UnirestException, IOException {
     HttpResponse<String> response = Unirest.get(url + path)
         .asString();
 
     return toObject(response.getBody(), clazz);
   }
 
-  <T> ModelResponce<T> post(String path, Object body, Class<T> clazz) throws UnirestException, IOException {
+  <T> ModelResponse<T> post(String path, Object body, Class<T> clazz) throws UnirestException, IOException {
     HttpResponse<String> response = Unirest.post(url + path)
         .body(body)
         .asString();
@@ -60,8 +60,8 @@ public class BaseControllerIT {
     return toObject(response.getBody(), clazz);
   }
 
-  private <T> ModelResponce<T> toObject(String body, Class<T> clazz) throws IOException {
-    JavaType t = jacksonObjectMapper.getTypeFactory().constructParametricType(ModelResponce.class, clazz);
+  private <T> ModelResponse<T> toObject(String body, Class<T> clazz) throws IOException {
+    JavaType t = jacksonObjectMapper.getTypeFactory().constructParametricType(ModelResponse.class, clazz);
     return jacksonObjectMapper.readValue(body, t);
   }
 

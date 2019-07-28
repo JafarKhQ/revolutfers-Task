@@ -6,6 +6,7 @@ import java.util.function.DoubleFunction;
 
 public final class BalanceUtil {
 
-  public static DoubleFunction<BigDecimal> toBankingBalance =
-      (d) -> BigDecimal.valueOf(d).setScale(2, RoundingMode.CEILING);
+  public static BigDecimal toBankingBalance(double d) {
+    return BigDecimal.valueOf(d).setScale(2, RoundingMode.CEILING);
+  }
 }

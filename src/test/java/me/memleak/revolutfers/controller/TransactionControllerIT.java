@@ -1,7 +1,9 @@
 package me.memleak.revolutfers.controller;
 
+import me.memleak.revolutfers.controller.model.ModelResponse;
 import me.memleak.revolutfers.controller.model.TransactionRequest;
 import me.memleak.revolutfers.events.NewTransactionEvent;
+import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Transaction;
 import org.junit.After;
 import org.junit.Before;
@@ -95,5 +97,26 @@ public class TransactionControllerIT extends BaseControllerIT {
 
 
     assertThat(result).endsWith("Amount must be greater than zero.");
+  }
+
+  @Test
+  public void createTransaction_sourceAccountNotFound() throws Exception {
+    //given
+    TransactionRequest request = new TransactionRequest();
+    request.setSourceAccount(0);
+    request.setDestinationAccount(1);
+    request.setAmount(1);
+    Transaction transaction = new Transaction(0, 1, BigDecimal.ONE);
+
+    when(event.onNewTransaction(any(Transaction.class))).
+        thenReturn(CompletableFuture.failedFuture(new AccountNotFoundException("Account not found.")));
+
+    //when
+    ModelResponse<String> result = post("transactions", request, String.class);
+
+    //then
+    verify(event, only()).onNewTransaction(eq(transaction));
+    // todo
+    //assertThat(result).isEqualTo(expected);
   }
 }

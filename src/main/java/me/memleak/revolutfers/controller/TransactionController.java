@@ -1,7 +1,6 @@
 package me.memleak.revolutfers.controller;
 
 import io.javalin.http.Context;
-import me.memleak.revolutfers.controller.model.ModelResponce;
 import me.memleak.revolutfers.controller.model.TransactionRequest;
 import me.memleak.revolutfers.events.NewTransactionEvent;
 import me.memleak.revolutfers.model.Transaction;
@@ -15,8 +14,7 @@ import javax.inject.Singleton;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static me.memleak.revolutfers.controller.model.ModelResponce.error;
-import static me.memleak.revolutfers.controller.model.ModelResponce.ok;
+import static me.memleak.revolutfers.controller.model.ModelResponse.ok;
 
 @Singleton
 public class TransactionController {
@@ -48,10 +46,13 @@ public class TransactionController {
       ctx.json(ok(transaction))
           .status(HttpStatus.OK_200);
     } catch (InterruptedException | ExecutionException e) {
-      // todo: handle this better
-      LOGGER.error("Error execution the transaction", e);
-      ctx.json(ModelResponce.error("Error execution the transaction"))
-          .status(HttpStatus.INTERNAL_SERVER_ERROR_500);
+      LOGGER.error("Error executing the transaction.", e);
+      RuntimeException cause = (RuntimeException) e.getCause();
+      if (cause != null) {
+        throw cause;
+      }
+
+      throw new RuntimeException("Internal Error.");
     }
   }
 }

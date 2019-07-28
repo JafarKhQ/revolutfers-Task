@@ -10,17 +10,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class BalanceUtilTest {
 
   @Test
-  public void toBankingBalance() {
-    BigDecimal result = toBankingBalance.apply(1.0000);
+  public void testToBankingBalance() {
+    BigDecimal result = toBankingBalance(1.0000);
     assertThat(result).isEqualByComparingTo(BigDecimal.ONE);
 
-    result = toBankingBalance.apply(0.69);
+    result = toBankingBalance(0.69);
     assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(0.69));
 
-    result = toBankingBalance.apply(1.688);
+    result = toBankingBalance(1.688);
     assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(1.69));
 
-    result = toBankingBalance.apply(2.683);
+    result = toBankingBalance(2.683);
     assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(2.69));
   }
 }

@@ -40,7 +40,7 @@ public class AccountService {
 
   public Account create(AccountRequest request) {
     return repository.create(
-        new Account(toBankingBalance.apply(request.getBalance()))
+        new Account(toBankingBalance(request.getBalance()))
     );
   }
 

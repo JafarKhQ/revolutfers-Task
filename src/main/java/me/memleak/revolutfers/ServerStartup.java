@@ -6,7 +6,7 @@ import io.javalin.http.BadRequestResponse;
 import io.javalin.plugin.json.JavalinJackson;
 import me.memleak.revolutfers.controller.AccountController;
 import me.memleak.revolutfers.controller.TransactionController;
-import me.memleak.revolutfers.controller.model.ModelResponce;
+import me.memleak.revolutfers.controller.model.ModelResponse;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.service.QueueExecutor;
 import org.eclipse.jetty.http.HttpStatus;
@@ -77,11 +77,11 @@ public class ServerStartup {
 
   private void setupExceptions(Javalin app) {
     app.exception(AccountNotFoundException.class, (e, ctx) -> {
-      ctx.status(HttpStatus.NOT_FOUND_404).json(ModelResponce.error(e.getMessage()));
+      ctx.status(HttpStatus.NOT_FOUND_404).json(ModelResponse.error(e.getMessage()));
     }).exception(BadRequestResponse.class, (e, ctx) -> {
-      ctx.status(HttpStatus.BAD_REQUEST_400).json(ModelResponce.error(e.getMessage()));
+      ctx.status(HttpStatus.BAD_REQUEST_400).json(ModelResponse.error(e.getMessage()));
     }).exception(Exception.class, (e, ctx) -> {
-      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR_500).json(ModelResponce.error(e.getMessage()));
+      ctx.status(HttpStatus.INTERNAL_SERVER_ERROR_500).json(ModelResponse.error(e.getMessage()));
     });
   }
 }

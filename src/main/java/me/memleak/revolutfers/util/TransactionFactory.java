@@ -10,7 +10,7 @@ public final class TransactionFactory {
     transaction.setStatus(Transaction.TransactionStatus.PENDING);
     transaction.setSourceId(transactionRequest.getSourceAccount());
     transaction.setDestinationId(transactionRequest.getDestinationAccount());
-    transaction.setAmount(BalanceUtil.toBankingBalance.apply(transactionRequest.getAmount()));
+    transaction.setAmount(BalanceUtil.toBankingBalance(transactionRequest.getAmount()));
     return transaction;
   }
 

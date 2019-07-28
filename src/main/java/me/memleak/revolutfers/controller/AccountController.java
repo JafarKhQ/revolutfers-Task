@@ -2,14 +2,13 @@ package me.memleak.revolutfers.controller;
 
 import io.javalin.http.Context;
 import me.memleak.revolutfers.controller.model.AccountRequest;
-import me.memleak.revolutfers.controller.model.ModelResponce;
 import me.memleak.revolutfers.service.AccountService;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static me.memleak.revolutfers.controller.model.ModelResponce.ok;
+import static me.memleak.revolutfers.controller.model.ModelResponse.ok;
 
 @Singleton
 public class AccountController {

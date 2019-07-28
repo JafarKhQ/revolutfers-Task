@@ -13,21 +13,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 public class AccountServiceTest extends BaseServiceTest {
 
   private static final Long ACCOUNT_ID = 0L;
 
-  private AccountService service;
+  private AccountService uut;
   private AccountMapRepository repository;
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
-    service = injector.getInstance(AccountService.class);
+    uut = injector.getInstance(AccountService.class);
     repository = injector.getInstance(AccountMapRepository.class);
   }
 
@@ -43,7 +43,7 @@ public class AccountServiceTest extends BaseServiceTest {
 
     AccountRequest request = new AccountRequest();
     request.setBalance(1.00);
-    Account result = service.create(request);
+    Account result = uut.create(request);
 
     ArgumentCaptor<Account> accountCaptor = ArgumentCaptor.forClass(Account.class);
     verify(repository, only()).create(accountCaptor.capture());
@@ -58,7 +58,7 @@ public class AccountServiceTest extends BaseServiceTest {
     List<Account> expected = new ArrayList<>();
     when(repository.findAll()).thenReturn(expected);
 
-    List<Account> result = service.getAll();
+    List<Account> result = uut.getAll();
 
     assertThat(result).isEqualTo(expected);
     verify(repository, only()).findAll();
@@ -69,21 +69,34 @@ public class AccountServiceTest extends BaseServiceTest {
     Account expected = new Account(ACCOUNT_ID);
     when(repository.find(eq(ACCOUNT_ID))).thenReturn(Optional.of(expected));
 
-    Account result = service.get(ACCOUNT_ID);
+    Account result = uut.get(ACCOUNT_ID);
 
     assertThat(result).isEqualTo(expected);
     verify(repository, only()).find(eq(ACCOUNT_ID));
   }
 
-  @Test(expected = AccountNotFoundException.class)
+  @Test
   public void find_accountNotFound() {
     when(repository.find(eq(ACCOUNT_ID))).thenReturn(Optional.empty());
 
     try {
-      service.get(ACCOUNT_ID);
-    } finally {
+      uut.get(ACCOUNT_ID);
+      failBecauseExceptionWasNotThrown(AccountNotFoundException.class);
+    } catch (AccountNotFoundException e) {
       verify(repository, only()).find(eq(ACCOUNT_ID));
     }
+  }
+
+  @Test
+  public void update() {
+    //given
+    Account account = new Account(ACCOUNT_ID, BigDecimal.ONE);
+
+    //when
+    uut.update(account);
+
+    //then
+    verify(repository).update(eq(account));
   }
 
   @Override

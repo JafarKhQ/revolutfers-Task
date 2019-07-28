@@ -6,8 +6,8 @@ import java.util.Objects;
 public class Transaction {
 
   public enum TransactionStatus {
-    FAILED,
     PENDING,
+    FAILED,
     EXECUTED
   }
 

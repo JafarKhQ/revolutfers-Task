@@ -8,6 +8,7 @@ import me.memleak.revolutfers.controller.AccountController;
 import me.memleak.revolutfers.controller.TransactionController;
 import me.memleak.revolutfers.controller.model.ModelResponse;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
+import me.memleak.revolutfers.exception.InsufficientFundException;
 import me.memleak.revolutfers.service.QueueExecutor;
 import org.eclipse.jetty.http.HttpStatus;
 
@@ -78,6 +79,8 @@ public class ServerStartup {
   private void setupExceptions(Javalin app) {
     app.exception(AccountNotFoundException.class, (e, ctx) -> {
       ctx.status(HttpStatus.NOT_FOUND_404).json(ModelResponse.error(e.getMessage()));
+    }).exception(InsufficientFundException.class, (e, ctx) -> {
+      ctx.status(HttpStatus.BAD_REQUEST_400).json(ModelResponse.error(e.getMessage()));
     }).exception(BadRequestResponse.class, (e, ctx) -> {
       ctx.status(HttpStatus.BAD_REQUEST_400).json(ModelResponse.error(e.getMessage()));
     }).exception(Exception.class, (e, ctx) -> {

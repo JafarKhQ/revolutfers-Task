@@ -4,6 +4,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
+import me.memleak.revolutfers.exception.InsufficientFundException;
 import me.memleak.revolutfers.model.Account;
 import me.memleak.revolutfers.model.Transaction;
 import org.junit.Test;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
 import java.util.Queue;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Mockito.*;
 
 public class TransactionProcessorTest extends BaseServiceTest {
@@ -47,17 +49,14 @@ public class TransactionProcessorTest extends BaseServiceTest {
     when(accountService.get(eq(NOT_FOUND_ACCOUNT_ID))).thenThrow(AccountNotFoundException.class);
 
     // when
-    Transaction result = uut.processNext();
-
-    //then
-    verify(queue).poll();
-    verify(accountService).get(eq(NOT_FOUND_ACCOUNT_ID));
-
-    assertThat(result.getAmount()).isEqualTo(BigDecimal.ZERO);
-    assertThat(result.getSourceId()).isEqualTo(NOT_FOUND_ACCOUNT_ID);
-    assertThat(result.getDestinationId()).isEqualTo(DST_ACCOUNT_ID);
-    assertThat(result.getStatus()).isEqualTo(Transaction.TransactionStatus.FAILED);
-    assertThat(result.getMessage()).containsIgnoringCase("The Source account is not found");
+    try {
+      uut.processNext();
+      failBecauseExceptionWasNotThrown(AccountNotFoundException.class);
+    } catch (AccountNotFoundException e) {
+      //then
+      verify(queue).poll();
+      verify(accountService).get(eq(NOT_FOUND_ACCOUNT_ID));
+    }
   }
 
   @Test
@@ -68,19 +67,16 @@ public class TransactionProcessorTest extends BaseServiceTest {
     when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(new Account());
     when(accountService.get(eq(NOT_FOUND_ACCOUNT_ID))).thenThrow(AccountNotFoundException.class);
 
-    // when
-    Transaction result = uut.processNext();
-
-    //then
-    verify(queue).poll();
-    verify(accountService).get(eq(SRC_ACCOUNT_ID));
-    verify(accountService).get(eq(NOT_FOUND_ACCOUNT_ID));
-
-    assertThat(result.getAmount()).isEqualTo(BigDecimal.ZERO);
-    assertThat(result.getSourceId()).isEqualTo(SRC_ACCOUNT_ID);
-    assertThat(result.getDestinationId()).isEqualTo(NOT_FOUND_ACCOUNT_ID);
-    assertThat(result.getStatus()).isEqualTo(Transaction.TransactionStatus.FAILED);
-    assertThat(result.getMessage()).containsIgnoringCase("The Destination account is not found");
+    try {
+      // when
+      uut.processNext();
+      failBecauseExceptionWasNotThrown(AccountNotFoundException.class);
+    } catch (AccountNotFoundException e) {
+      //then
+      verify(queue).poll();
+      verify(accountService).get(eq(SRC_ACCOUNT_ID));
+      verify(accountService).get(eq(NOT_FOUND_ACCOUNT_ID));
+    }
   }
 
   @Test
@@ -93,21 +89,18 @@ public class TransactionProcessorTest extends BaseServiceTest {
     when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(src);
     when(accountService.get(eq(DST_ACCOUNT_ID))).thenReturn(dest);
 
-    // when
-    Transaction result = uut.processNext();
-
-    //then
-    verify(queue).poll();
-    verify(accountService).lockAccounts(eq(src), eq(dest));
-    verify(accountService).get(eq(SRC_ACCOUNT_ID));
-    verify(accountService).get(eq(DST_ACCOUNT_ID));
-    verify(accountService).unlockAccounts(eq(src), eq(dest));
-
-    assertThat(result.getAmount()).isEqualTo(BigDecimal.TEN);
-    assertThat(result.getSourceId()).isEqualTo(SRC_ACCOUNT_ID);
-    assertThat(result.getDestinationId()).isEqualTo(DST_ACCOUNT_ID);
-    assertThat(result.getStatus()).isEqualTo(Transaction.TransactionStatus.FAILED);
-    assertThat(result.getMessage()).containsIgnoringCase("Insufficient fund");
+    try {
+      // when
+      uut.processNext();
+      failBecauseExceptionWasNotThrown(InsufficientFundException.class);
+    } catch (InsufficientFundException e) {
+      //then
+      verify(queue).poll();
+      verify(accountService).lockAccounts(eq(src), eq(dest));
+      verify(accountService).get(eq(SRC_ACCOUNT_ID));
+      verify(accountService).get(eq(DST_ACCOUNT_ID));
+      verify(accountService).unlockAccounts(eq(src), eq(dest));
+    }
   }
 
   @Test
@@ -136,8 +129,6 @@ public class TransactionProcessorTest extends BaseServiceTest {
     assertThat(result.getAmount()).isEqualTo(BigDecimal.ONE);
     assertThat(result.getSourceId()).isEqualTo(SRC_ACCOUNT_ID);
     assertThat(result.getDestinationId()).isEqualTo(DST_ACCOUNT_ID);
-    assertThat(result.getStatus()).isEqualTo(Transaction.TransactionStatus.EXECUTED);
-    assertThat(result.getMessage()).isNull();
 
     final Account srcAccount = accountsArgument.getAllValues().get(0);
     final Account destAccount = accountsArgument.getAllValues().get(1);

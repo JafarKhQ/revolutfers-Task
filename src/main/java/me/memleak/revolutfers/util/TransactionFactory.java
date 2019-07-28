@@ -7,7 +7,6 @@ public final class TransactionFactory {
 
   public static Transaction from(TransactionRequest transactionRequest) {
     Transaction transaction = new Transaction();
-    transaction.setStatus(Transaction.TransactionStatus.PENDING);
     transaction.setSourceId(transactionRequest.getSourceAccount());
     transaction.setDestinationId(transactionRequest.getDestinationAccount());
     transaction.setAmount(BalanceUtil.toBankingBalance(transactionRequest.getAmount()));

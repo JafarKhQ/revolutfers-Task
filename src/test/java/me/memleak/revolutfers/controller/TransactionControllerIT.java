@@ -28,6 +28,7 @@ public class TransactionControllerIT extends BaseControllerIT {
   @After
   public void tearDown() {
     verifyNoMoreInteractions(event);
+    reset(event);
   }
 
   @Test
@@ -116,7 +117,7 @@ public class TransactionControllerIT extends BaseControllerIT {
 
     //then
     verify(event, only()).onNewTransaction(eq(transaction));
-    // todo
+    // todo: correctly cover with test
     //assertThat(result).isEqualTo(expected);
   }
 }

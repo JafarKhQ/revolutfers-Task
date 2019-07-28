@@ -23,7 +23,5 @@ public class TransactionFactoryTest {
     assertThat(t.getSourceId()).isEqualTo(1);
     assertThat(t.getDestinationId()).isEqualTo(2);
     assertThat(t.getAmount()).isEqualTo(BigDecimal.valueOf(1.33));
-    assertThat(t.getMessage()).isNull();
-    assertThat(t.getStatus()).isEqualTo(Transaction.TransactionStatus.PENDING);
   }
 }

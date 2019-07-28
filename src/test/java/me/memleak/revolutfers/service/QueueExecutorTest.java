@@ -18,7 +18,7 @@ import static org.mockito.Mockito.*;
 
 public class QueueExecutorTest extends BaseServiceTest {
 
-  private QueueExecutor executor;
+  private QueueExecutor uut;
   private Queue<Transaction> queue;
   private TransactionProcessor processor;
 
@@ -26,8 +26,8 @@ public class QueueExecutorTest extends BaseServiceTest {
   public void setUp() throws Exception {
     super.setUp();
 
+    uut = injector.getInstance(QueueExecutor.class);
     queue = injector.getInstance(new Key<Queue<Transaction>>() {});
-    executor = injector.getInstance(QueueExecutor.class);
     processor = injector.getInstance(TransactionProcessor.class);
   }
 
@@ -46,8 +46,8 @@ public class QueueExecutorTest extends BaseServiceTest {
         .collect(toList());
 
     // when
-    transactions.forEach(executor::onNewTransaction);
-    executor.stop();
+    transactions.forEach(uut::onNewTransaction);
+    uut.stop();
 
     // then
     verify(processor, times(nTransactions)).processNext();

@@ -1,14 +1,17 @@
 package me.memleak.revolutfers.service;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 import me.memleak.revolutfers.model.Transaction;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Queue;
-import java.util.stream.Stream;
+import java.util.stream.IntStream;
 
 import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.*;
@@ -16,33 +19,39 @@ import static org.mockito.Mockito.*;
 public class QueueExecutorTest extends BaseServiceTest {
 
   private QueueExecutor executor;
+  private Queue<Transaction> queue;
   private TransactionProcessor processor;
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
+    queue = injector.getInstance(new Key<Queue<Transaction>>() {});
     executor = injector.getInstance(QueueExecutor.class);
     processor = injector.getInstance(TransactionProcessor.class);
   }
 
   @Override
   public void tearDown() throws Exception {
-    verifyNoMoreInteractions(processor);
+    verifyNoMoreInteractions(processor, queue);
   }
 
   @Test
   public void transactionsProcessedInOrder() throws Exception {
-    List<Transaction> transactions = Stream.of(0, 1, 2, 3, 4, 5, 6, 7, 8, 9)
-        .map(n -> new Transaction(0, 0, BigDecimal.ONE))
+    // given
+    final int nTransactions = 5;
+    InOrder inOrder = inOrder(queue);
+    List<Transaction> transactions = IntStream.range(0, nTransactions)
+        .mapToObj(n -> new Transaction(n + 1, n + 2, BigDecimal.valueOf(n)))
         .collect(toList());
 
+    // when
     transactions.forEach(executor::onNewTransaction);
+    executor.stop();
 
-    // todo: remove sleep and correctly wait until all threads finished
-    Thread.sleep(100);
-
-    verify(processor, times(10)).processNext();
+    // then
+    verify(processor, times(nTransactions)).processNext();
+    transactions.forEach(t -> inOrder.verify(queue).add(eq(t)));
   }
 
   @Override
@@ -50,6 +59,9 @@ public class QueueExecutorTest extends BaseServiceTest {
     return new AbstractModule() {
       @Override
       protected void configure() {
+        bind(Integer.class)
+            .annotatedWith(Names.named("transactions.thread.size"))
+            .toInstance(2);
         bind(new TypeLiteral<Queue<Transaction>>() {
         }).toInstance(mock(Queue.class));
         bind(TransactionProcessor.class)

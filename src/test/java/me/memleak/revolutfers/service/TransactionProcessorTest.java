@@ -86,18 +86,22 @@ public class TransactionProcessorTest extends BaseServiceTest {
   @Test
   public void shouldFailedWhenInsufficientFund() {
     // given
+    Account src = new Account(SRC_ACCOUNT_ID, BigDecimal.ONE),
+        dest = new Account(DST_ACCOUNT_ID, BigDecimal.ZERO);
     Transaction transaction = new Transaction(SRC_ACCOUNT_ID, DST_ACCOUNT_ID, BigDecimal.TEN);
     when(queue.poll()).thenReturn(transaction);
-    when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(new Account(SRC_ACCOUNT_ID, BigDecimal.ONE));
-    when(accountService.get(eq(DST_ACCOUNT_ID))).thenReturn(new Account(DST_ACCOUNT_ID, BigDecimal.ZERO));
+    when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(src);
+    when(accountService.get(eq(DST_ACCOUNT_ID))).thenReturn(dest);
 
     // when
     Transaction result = uut.processNext();
 
     //then
     verify(queue).poll();
+    verify(accountService).lockAccounts(eq(src), eq(dest));
     verify(accountService).get(eq(SRC_ACCOUNT_ID));
     verify(accountService).get(eq(DST_ACCOUNT_ID));
+    verify(accountService).unlockAccounts(eq(src), eq(dest));
 
     assertThat(result.getAmount()).isEqualTo(BigDecimal.TEN);
     assertThat(result.getSourceId()).isEqualTo(SRC_ACCOUNT_ID);
@@ -109,18 +113,22 @@ public class TransactionProcessorTest extends BaseServiceTest {
   @Test
   public void shouldExecuteAndUpdateAccounts() {
     // given
+    Account src = new Account(SRC_ACCOUNT_ID, BigDecimal.ONE),
+        dest = new Account(DST_ACCOUNT_ID, BigDecimal.ZERO);
     Transaction transaction = new Transaction(SRC_ACCOUNT_ID, DST_ACCOUNT_ID, BigDecimal.ONE);
     when(queue.poll()).thenReturn(transaction);
-    when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(new Account(SRC_ACCOUNT_ID, BigDecimal.ONE));
-    when(accountService.get(eq(DST_ACCOUNT_ID))).thenReturn(new Account(DST_ACCOUNT_ID, BigDecimal.ZERO));
+    when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(src);
+    when(accountService.get(eq(DST_ACCOUNT_ID))).thenReturn(dest);
 
     // when
     Transaction result = uut.processNext();
 
     //then
     verify(queue).poll();
+    verify(accountService).lockAccounts(eq(src), eq(dest));
     verify(accountService).get(eq(SRC_ACCOUNT_ID));
     verify(accountService).get(eq(DST_ACCOUNT_ID));
+    verify(accountService).unlockAccounts(eq(src), eq(dest));
 
     ArgumentCaptor<Account> accountsArgument = ArgumentCaptor.forClass(Account.class);
     verify(accountService, times(2)).update(accountsArgument.capture());

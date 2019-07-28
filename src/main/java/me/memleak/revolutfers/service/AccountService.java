@@ -8,6 +8,10 @@ import me.memleak.revolutfers.repository.AccountMapRepository;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static me.memleak.revolutfers.util.BalanceUtil.toBankingBalance;
 
@@ -38,5 +42,22 @@ public class AccountService {
     return repository.create(
         new Account(toBankingBalance.apply(request.getBalance()))
     );
+  }
+
+  public void lockAccounts(Account... accounts) {
+    lockUnlockByIds(Lock::lock, accounts);
+  }
+
+  public void unlockAccounts(Account... accounts) {
+    lockUnlockByIds(Lock::unlock, accounts);
+  }
+
+  private void lockUnlockByIds(Consumer<? super Lock> action, Account... accounts) {
+    Stream.of(accounts)
+        .map(Account::getId)
+        .sorted()
+        .map(repository::findLockById)
+        .map(Optional::get)
+        .forEach(action);
   }
 }

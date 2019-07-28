@@ -7,13 +7,17 @@ import me.memleak.revolutfers.model.Account;
 import me.memleak.revolutfers.repository.AccountMapRepository;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Mockito.*;
 
 public class AccountServiceTest extends BaseServiceTest {
@@ -97,6 +101,40 @@ public class AccountServiceTest extends BaseServiceTest {
 
     //then
     verify(repository).update(eq(account));
+  }
+
+  @Test
+  public void lockAccountsMustLockInOrder() {
+    //given
+    Account src = new Account(5L), dest = new Account(3L);
+    InOrder inOrder = inOrder(repository);
+    when(repository.findLockById(anyLong())).thenReturn(Optional.of(new ReentrantLock()));
+
+    //when
+    uut.lockAccounts(src, dest);
+
+    //then
+    inOrder.verify(repository).findLockById(eq(3L));
+    inOrder.verify(repository).findLockById(eq(5L));
+  }
+
+  @Test
+  public void unlockAccountsMustUnLockInOrder() {
+    //given
+    Account src = new Account(7L), dest = new Account(1L);
+    InOrder inOrder = inOrder(repository);
+    when(repository.findLockById(anyLong())).thenAnswer(a -> {
+      Lock lock = new ReentrantLock();
+      lock.lock();
+      return Optional.of(lock);
+    });
+
+    //when
+    uut.unlockAccounts(src, dest);
+
+    //then
+    inOrder.verify(repository).findLockById(eq(1L));
+    inOrder.verify(repository).findLockById(eq(7L));
   }
 
   @Override

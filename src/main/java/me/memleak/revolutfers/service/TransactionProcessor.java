@@ -2,7 +2,6 @@ package me.memleak.revolutfers.service;
 
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
-import me.memleak.revolutfers.model.ModelId;
 import me.memleak.revolutfers.model.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,8 +10,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.text.MessageFormat;
 import java.util.Queue;
-import java.util.concurrent.locks.Lock;
-import java.util.stream.Stream;
 
 import static java.util.Comparator.comparing;
 
@@ -47,8 +44,8 @@ public class TransactionProcessor {
       return transaction;
     }
 
-    final Stream<Lock> locks = lock(src, dest);
     try {
+      accountService.lockAccounts(src, dest);
       if (src.getBalance().compareTo(transaction.getAmount()) < 0) {
         LOGGER.info("Insufficient fund.");
         transaction.setMessage("Insufficient fund.");
@@ -64,22 +61,9 @@ public class TransactionProcessor {
         transaction.setStatus(Transaction.TransactionStatus.EXECUTED);
       }
     } finally {
-      unlock(locks);
+      accountService.unlockAccounts(src, dest);
     }
 
     return transaction;
-  }
-
-  private Stream<Lock> lock(Account src, Account dest) {
-    LOGGER.info("Locking the accounts {} and {}", src.getId(), dest.getId());
-    return Stream.of(src, dest)
-        .sorted(comparing(ModelId::getId))
-        .map(Account::getLock)
-        .peek(Lock::lock);
-  }
-
-  private void unlock(Stream<Lock> locks) {
-    LOGGER.info("Unlocking accounts");
-    locks.forEach(Lock::unlock);
   }
 }

@@ -24,4 +24,10 @@ public class AccountMapRepository extends BaseMapRepository<Account> {
   public Optional<Lock> findLockById(long id) {
     return Optional.ofNullable(mapDBLock.get(id));
   }
+
+  @Override
+  public void deleteAll() {
+    super.deleteAll();
+    mapDBLock.clear();
+  }
 }

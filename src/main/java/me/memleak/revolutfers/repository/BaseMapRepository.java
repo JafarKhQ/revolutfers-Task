@@ -7,8 +7,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class BaseMapRepository<T extends ModelId> {
+  private static final long ID_INIT_VALUE = 1L;
 
-  private final AtomicLong idGenerator = new AtomicLong();
+  private final AtomicLong idGenerator = new AtomicLong(ID_INIT_VALUE);
   private final Map<Long, T> mapDB = new ConcurrentHashMap<>();
 
   public T create(T item) {
@@ -21,7 +22,7 @@ public abstract class BaseMapRepository<T extends ModelId> {
 
   public T update(T item) {
     Long id = item.getId();
-    if (id == null) {
+    if (id == null || !mapDB.containsKey(id)) {
       return create(item);
     }
 
@@ -35,6 +36,11 @@ public abstract class BaseMapRepository<T extends ModelId> {
 
   public Optional<T> find(long id) {
     return Optional.ofNullable(mapDB.get(id));
+  }
+
+  public void deleteAll() {
+    mapDB.clear();
+    idGenerator.set(ID_INIT_VALUE);
   }
 
   private long getNextId() {

@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import io.javalin.Javalin;
 import io.javalin.http.BadRequestResponse;
 import io.javalin.plugin.json.JavalinJackson;
-import me.memleak.revolutfers.controller.AccountController;
-import me.memleak.revolutfers.controller.TransactionController;
+import me.memleak.revolutfers.controller.AccountsController;
+import me.memleak.revolutfers.controller.TransactionsController;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.exception.InsufficientFundException;
-import me.memleak.revolutfers.service.QueueExecutor;
+import me.memleak.revolutfers.service.TransactionsService;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
@@ -18,30 +18,30 @@ import static io.javalin.apibuilder.ApiBuilder.*;
 import static me.memleak.revolutfers.controller.model.ModelResponse.error;
 
 @Singleton
-public class ServerStartup {
+public class ServerConfig {
   private static final int PORT = 7000;
 
   private final Javalin app;
-  private final AccountController accountController;
-  private final TransactionController transactionController;
-  private final QueueExecutor queueExecutor;
+  private final AccountsController accountsController;
+  private final TransactionsController transactionsController;
+  private final TransactionsService transactionsService;
 
   @Inject
-  public ServerStartup(Javalin app,
-                       AccountController accountController,
-                       TransactionController transactionController,
-                       QueueExecutor queueExecutor) {
+  public ServerConfig(Javalin app,
+                      AccountsController accountsController,
+                      TransactionsController transactionsController,
+                      TransactionsService transactionsService) {
     this.app = app;
-    this.accountController = accountController;
-    this.transactionController = transactionController;
-    this.queueExecutor = queueExecutor;
+    this.accountsController = accountsController;
+    this.transactionsController = transactionsController;
+    this.transactionsService = transactionsService;
   }
 
-  public ServerStartup boot() {
+  public ServerConfig boot() {
     return boot(PORT);
   }
 
-  public ServerStartup boot(int port) {
+  public ServerConfig boot(int port) {
     jackson();
     setupRoutes(app);
     setupExceptions(app);
@@ -51,7 +51,7 @@ public class ServerStartup {
   }
 
   public void shutdown() {
-    queueExecutor.stop();
+    transactionsService.stop();
     app.stop();
   }
 
@@ -63,15 +63,15 @@ public class ServerStartup {
   private void setupRoutes(Javalin app) {
     app.routes(() -> {
       path("accounts", () -> {
-        get(accountController::getAllAccounts);
-        post(accountController::createAccount);
+        get(accountsController::getAllAccounts);
+        post(accountsController::createAccount);
         path(":id", () -> {
-          get(accountController::getAccount);
+          get(accountsController::getAccount);
         });
       });
 
       path("transactions", () -> {
-        post(transactionController::createTransaction);
+        post(transactionsController::createTransaction);
       });
     });
   }

@@ -16,19 +16,19 @@ import java.util.stream.IntStream;
 import static java.util.stream.Collectors.toList;
 import static org.mockito.Mockito.*;
 
-public class QueueExecutorTest extends BaseServiceTest {
+public class TransactionsServiceTest extends BaseServiceTest {
 
-  private QueueExecutor uut;
+  private TransactionsService uut;
   private Queue<Transaction> queue;
-  private TransactionProcessor processor;
+  private TransactionsConsumer processor;
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
-    uut = injector.getInstance(QueueExecutor.class);
+    uut = injector.getInstance(TransactionsService.class);
     queue = injector.getInstance(new Key<Queue<Transaction>>() {});
-    processor = injector.getInstance(TransactionProcessor.class);
+    processor = injector.getInstance(TransactionsConsumer.class);
   }
 
   @Override
@@ -50,7 +50,7 @@ public class QueueExecutorTest extends BaseServiceTest {
     uut.stop();
 
     // then
-    verify(processor, times(nTransactions)).processNext();
+    verify(processor, times(nTransactions)).consumeNext();
     transactions.forEach(t -> inOrder.verify(queue).add(eq(t)));
   }
 
@@ -64,8 +64,8 @@ public class QueueExecutorTest extends BaseServiceTest {
             .toInstance(2);
         bind(new TypeLiteral<Queue<Transaction>>() {
         }).toInstance(mock(Queue.class));
-        bind(TransactionProcessor.class)
-            .toInstance(mock(TransactionProcessor.class));
+        bind(TransactionsConsumer.class)
+            .toInstance(mock(TransactionsConsumer.class));
       }
     };
   }

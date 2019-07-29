@@ -4,7 +4,7 @@ import com.google.inject.AbstractModule;
 import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
-import me.memleak.revolutfers.repository.AccountMapRepository;
+import me.memleak.revolutfers.repository.AccountsInMemoryRepository;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
@@ -20,19 +20,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Mockito.*;
 
-public class AccountServiceTest extends BaseServiceTest {
+public class AccountsServiceTest extends BaseServiceTest {
 
   private static final Long ACCOUNT_ID = 0L;
 
-  private AccountService uut;
-  private AccountMapRepository repository;
+  private AccountsService uut;
+  private AccountsInMemoryRepository repository;
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
-    uut = injector.getInstance(AccountService.class);
-    repository = injector.getInstance(AccountMapRepository.class);
+    uut = injector.getInstance(AccountsService.class);
+    repository = injector.getInstance(AccountsInMemoryRepository.class);
   }
 
   @Override
@@ -145,8 +145,8 @@ public class AccountServiceTest extends BaseServiceTest {
     return new AbstractModule() {
       @Override
       protected void configure() {
-        bind(AccountMapRepository.class)
-            .toInstance(mock(AccountMapRepository.class));
+        bind(AccountsInMemoryRepository.class)
+            .toInstance(mock(AccountsInMemoryRepository.class));
       }
     };
   }

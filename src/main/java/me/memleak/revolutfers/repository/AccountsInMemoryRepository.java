@@ -10,7 +10,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 @Singleton
-public class AccountMapRepository extends BaseMapRepository<Account> {
+public class AccountsInMemoryRepository extends BaseInMemoryRepository<Account> {
 
   private final Map<Long, Lock> mapDBLock = new ConcurrentHashMap<>();
 

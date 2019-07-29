@@ -11,27 +11,27 @@ import javax.inject.Singleton;
 import java.util.Queue;
 
 @Singleton
-public class TransactionProcessor {
-  private static final Logger LOGGER = LoggerFactory.getLogger(TransactionProcessor.class);
+public class TransactionsConsumer {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TransactionsConsumer.class);
 
   private final Queue<Transaction> queue;
-  private final AccountService accountService;
+  private final AccountsService accountsService;
 
   @Inject
-  public TransactionProcessor(AccountService accountService, Queue<Transaction> queue) {
+  public TransactionsConsumer(AccountsService accountsService, Queue<Transaction> queue) {
     this.queue = queue;
-    this.accountService = accountService;
+    this.accountsService = accountsService;
   }
 
-  public Transaction processNext() {
+  public Transaction consumeNext() {
     Transaction transaction = queue.poll();
     assert transaction != null; // shouldn't happen
     LOGGER.info("Start processing Transaction {}", transaction.toString());
 
-    Account src = accountService.get(transaction.getSourceId());
-    Account dest = accountService.get(transaction.getDestinationId());
+    Account src = accountsService.get(transaction.getSourceId());
+    Account dest = accountsService.get(transaction.getDestinationId());
     try {
-      accountService.lockAccounts(src, dest);
+      accountsService.lockAccounts(src, dest);
       if (src.getBalance().compareTo(transaction.getAmount()) < 0) {
         LOGGER.info("Insufficient fund.");
         throw new InsufficientFundException("Insufficient fund");
@@ -40,11 +40,11 @@ public class TransactionProcessor {
         src.setBalance(src.getBalance().subtract(transaction.getAmount()));
         dest.setBalance(dest.getBalance().add(transaction.getAmount()));
 
-        accountService.update(src);
-        accountService.update(dest);
+        accountsService.update(src);
+        accountsService.update(dest);
       }
     } finally {
-      accountService.unlockAccounts(src, dest);
+      accountsService.unlockAccounts(src, dest);
     }
 
     return transaction;

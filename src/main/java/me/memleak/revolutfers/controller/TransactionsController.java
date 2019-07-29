@@ -2,9 +2,8 @@ package me.memleak.revolutfers.controller;
 
 import io.javalin.http.Context;
 import me.memleak.revolutfers.controller.model.TransactionRequest;
-import me.memleak.revolutfers.events.NewTransactionEvent;
+import me.memleak.revolutfers.events.TransactionEvent;
 import me.memleak.revolutfers.model.Transaction;
-import me.memleak.revolutfers.util.TransactionFactory;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +17,13 @@ import static me.memleak.revolutfers.controller.model.ModelResponse.ok;
 import static me.memleak.revolutfers.util.TransactionFactory.from;
 
 @Singleton
-public class TransactionController {
-  private static final Logger LOGGER = LoggerFactory.getLogger(TransactionController.class);
+public class TransactionsController {
+  private static final Logger LOGGER = LoggerFactory.getLogger(TransactionsController.class);
 
-  private final NewTransactionEvent transactionEvent;
+  private final TransactionEvent transactionEvent;
 
   @Inject
-  public TransactionController(NewTransactionEvent transactionEvent) {
+  public TransactionsController(TransactionEvent transactionEvent) {
     this.transactionEvent = transactionEvent;
   }
 

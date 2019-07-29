@@ -2,7 +2,7 @@ package me.memleak.revolutfers.controller;
 
 import io.javalin.http.Context;
 import me.memleak.revolutfers.controller.model.AccountRequest;
-import me.memleak.revolutfers.service.AccountService;
+import me.memleak.revolutfers.service.AccountsService;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
@@ -11,12 +11,12 @@ import javax.inject.Singleton;
 import static me.memleak.revolutfers.controller.model.ModelResponse.ok;
 
 @Singleton
-public class AccountController {
+public class AccountsController {
 
-  private final AccountService service;
+  private final AccountsService service;
 
   @Inject
-  public AccountController(AccountService service) {
+  public AccountsController(AccountsService service) {
     this.service = service;
   }
 

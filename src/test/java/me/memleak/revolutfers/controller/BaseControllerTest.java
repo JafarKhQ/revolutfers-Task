@@ -8,12 +8,12 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.ObjectMapper;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
-import me.memleak.revolutfers.ServerStartup;
+import me.memleak.revolutfers.ServerConfig;
 import me.memleak.revolutfers.controller.model.ModelResponse;
-import me.memleak.revolutfers.events.NewTransactionEvent;
-import me.memleak.revolutfers.guicemodule.MyGuiceModule;
-import me.memleak.revolutfers.service.AccountService;
-import me.memleak.revolutfers.service.QueueExecutor;
+import me.memleak.revolutfers.events.TransactionEvent;
+import me.memleak.revolutfers.guicemodule.GuiceConfigurationModule;
+import me.memleak.revolutfers.service.AccountsService;
+import me.memleak.revolutfers.service.TransactionsService;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 
@@ -21,19 +21,19 @@ import java.io.IOException;
 
 import static org.mockito.Mockito.mock;
 
-public class BaseControllerIT {
+public class BaseControllerTest {
 
   private static final int port = 8000;
   private static final String url = "http://localhost:" + port + "/";
 
   static Injector injector;
-  private static ServerStartup server;
+  private static ServerConfig server;
   private static com.fasterxml.jackson.databind.ObjectMapper jacksonObjectMapper;
 
   @BeforeClass
   public static void beforeClass() throws Exception {
     injector = Guice.createInjector(new MockedGuiceModule());
-    server = injector.getInstance(ServerStartup.class)
+    server = injector.getInstance(ServerConfig.class)
         .boot(port);
     jacksonObjectMapper = injector.getInstance(com.fasterxml.jackson.databind.ObjectMapper.class);
 
@@ -86,16 +86,16 @@ public class BaseControllerIT {
     });
   }
 
-  private static class MockedGuiceModule extends MyGuiceModule {
+  private static class MockedGuiceModule extends GuiceConfigurationModule {
     @Override
     protected void configure() {
       bindApp();
-      bind(AccountService.class)
-          .toInstance(mock(AccountService.class));
-      bind(QueueExecutor.class)
-          .toInstance(mock(QueueExecutor.class));
-      bind(NewTransactionEvent.class)
-          .toInstance(mock(NewTransactionEvent.class));
+      bind(AccountsService.class)
+          .toInstance(mock(AccountsService.class));
+      bind(TransactionsService.class)
+          .toInstance(mock(TransactionsService.class));
+      bind(TransactionEvent.class)
+          .toInstance(mock(TransactionEvent.class));
     }
   }
 }

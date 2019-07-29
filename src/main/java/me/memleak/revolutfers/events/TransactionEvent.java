@@ -4,7 +4,7 @@ import me.memleak.revolutfers.model.Transaction;
 
 import java.util.concurrent.Future;
 
-public interface NewTransactionEvent {
+public interface TransactionEvent {
 
   Future<Transaction> onNewTransaction(Transaction transaction);
 }

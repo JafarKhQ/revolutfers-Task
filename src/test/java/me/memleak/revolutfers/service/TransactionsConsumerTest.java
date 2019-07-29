@@ -17,14 +17,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.failBecauseExceptionWasNotThrown;
 import static org.mockito.Mockito.*;
 
-public class TransactionProcessorTest extends BaseServiceTest {
+public class TransactionsConsumerTest extends BaseServiceTest {
   private static final long SRC_ACCOUNT_ID = 69;
   private static final long DST_ACCOUNT_ID = 89;
   private static final long NOT_FOUND_ACCOUNT_ID = 42;
 
   private Queue<Transaction> queue;
-  private AccountService accountService;
-  private TransactionProcessor uut;
+  private AccountsService accountsService;
+  private TransactionsConsumer uut;
 
   @Override
   public void setUp() throws Exception {
@@ -32,13 +32,13 @@ public class TransactionProcessorTest extends BaseServiceTest {
 
     queue = injector.getInstance(new Key<Queue<Transaction>>() {
     });
-    accountService = injector.getInstance(AccountService.class);
-    uut = injector.getInstance(TransactionProcessor.class);
+    accountsService = injector.getInstance(AccountsService.class);
+    uut = injector.getInstance(TransactionsConsumer.class);
   }
 
   @Override
   public void tearDown() throws Exception {
-    verifyNoMoreInteractions(accountService, queue);
+    verifyNoMoreInteractions(accountsService, queue);
   }
 
   @Test
@@ -46,16 +46,16 @@ public class TransactionProcessorTest extends BaseServiceTest {
     // given
     Transaction transaction = new Transaction(NOT_FOUND_ACCOUNT_ID, DST_ACCOUNT_ID, BigDecimal.ZERO);
     when(queue.poll()).thenReturn(transaction);
-    when(accountService.get(eq(NOT_FOUND_ACCOUNT_ID))).thenThrow(AccountNotFoundException.class);
+    when(accountsService.get(eq(NOT_FOUND_ACCOUNT_ID))).thenThrow(AccountNotFoundException.class);
 
     // when
     try {
-      uut.processNext();
+      uut.consumeNext();
       failBecauseExceptionWasNotThrown(AccountNotFoundException.class);
     } catch (AccountNotFoundException e) {
       //then
       verify(queue).poll();
-      verify(accountService).get(eq(NOT_FOUND_ACCOUNT_ID));
+      verify(accountsService).get(eq(NOT_FOUND_ACCOUNT_ID));
     }
   }
 
@@ -64,18 +64,18 @@ public class TransactionProcessorTest extends BaseServiceTest {
     // given
     Transaction transaction = new Transaction(SRC_ACCOUNT_ID, NOT_FOUND_ACCOUNT_ID, BigDecimal.ZERO);
     when(queue.poll()).thenReturn(transaction);
-    when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(new Account());
-    when(accountService.get(eq(NOT_FOUND_ACCOUNT_ID))).thenThrow(AccountNotFoundException.class);
+    when(accountsService.get(eq(SRC_ACCOUNT_ID))).thenReturn(new Account());
+    when(accountsService.get(eq(NOT_FOUND_ACCOUNT_ID))).thenThrow(AccountNotFoundException.class);
 
     try {
       // when
-      uut.processNext();
+      uut.consumeNext();
       failBecauseExceptionWasNotThrown(AccountNotFoundException.class);
     } catch (AccountNotFoundException e) {
       //then
       verify(queue).poll();
-      verify(accountService).get(eq(SRC_ACCOUNT_ID));
-      verify(accountService).get(eq(NOT_FOUND_ACCOUNT_ID));
+      verify(accountsService).get(eq(SRC_ACCOUNT_ID));
+      verify(accountsService).get(eq(NOT_FOUND_ACCOUNT_ID));
     }
   }
 
@@ -86,20 +86,20 @@ public class TransactionProcessorTest extends BaseServiceTest {
         dest = new Account(DST_ACCOUNT_ID, BigDecimal.ZERO);
     Transaction transaction = new Transaction(SRC_ACCOUNT_ID, DST_ACCOUNT_ID, BigDecimal.TEN);
     when(queue.poll()).thenReturn(transaction);
-    when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(src);
-    when(accountService.get(eq(DST_ACCOUNT_ID))).thenReturn(dest);
+    when(accountsService.get(eq(SRC_ACCOUNT_ID))).thenReturn(src);
+    when(accountsService.get(eq(DST_ACCOUNT_ID))).thenReturn(dest);
 
     try {
       // when
-      uut.processNext();
+      uut.consumeNext();
       failBecauseExceptionWasNotThrown(InsufficientFundException.class);
     } catch (InsufficientFundException e) {
       //then
       verify(queue).poll();
-      verify(accountService).lockAccounts(eq(src), eq(dest));
-      verify(accountService).get(eq(SRC_ACCOUNT_ID));
-      verify(accountService).get(eq(DST_ACCOUNT_ID));
-      verify(accountService).unlockAccounts(eq(src), eq(dest));
+      verify(accountsService).lockAccounts(eq(src), eq(dest));
+      verify(accountsService).get(eq(SRC_ACCOUNT_ID));
+      verify(accountsService).get(eq(DST_ACCOUNT_ID));
+      verify(accountsService).unlockAccounts(eq(src), eq(dest));
     }
   }
 
@@ -110,21 +110,21 @@ public class TransactionProcessorTest extends BaseServiceTest {
         dest = new Account(DST_ACCOUNT_ID, BigDecimal.ZERO);
     Transaction transaction = new Transaction(SRC_ACCOUNT_ID, DST_ACCOUNT_ID, BigDecimal.ONE);
     when(queue.poll()).thenReturn(transaction);
-    when(accountService.get(eq(SRC_ACCOUNT_ID))).thenReturn(src);
-    when(accountService.get(eq(DST_ACCOUNT_ID))).thenReturn(dest);
+    when(accountsService.get(eq(SRC_ACCOUNT_ID))).thenReturn(src);
+    when(accountsService.get(eq(DST_ACCOUNT_ID))).thenReturn(dest);
 
     // when
-    Transaction result = uut.processNext();
+    Transaction result = uut.consumeNext();
 
     //then
     verify(queue).poll();
-    verify(accountService).lockAccounts(eq(src), eq(dest));
-    verify(accountService).get(eq(SRC_ACCOUNT_ID));
-    verify(accountService).get(eq(DST_ACCOUNT_ID));
-    verify(accountService).unlockAccounts(eq(src), eq(dest));
+    verify(accountsService).lockAccounts(eq(src), eq(dest));
+    verify(accountsService).get(eq(SRC_ACCOUNT_ID));
+    verify(accountsService).get(eq(DST_ACCOUNT_ID));
+    verify(accountsService).unlockAccounts(eq(src), eq(dest));
 
     ArgumentCaptor<Account> accountsArgument = ArgumentCaptor.forClass(Account.class);
-    verify(accountService, times(2)).update(accountsArgument.capture());
+    verify(accountsService, times(2)).update(accountsArgument.capture());
 
     assertThat(result.getAmount()).isEqualTo(BigDecimal.ONE);
     assertThat(result.getSourceId()).isEqualTo(SRC_ACCOUNT_ID);
@@ -146,8 +146,8 @@ public class TransactionProcessorTest extends BaseServiceTest {
       protected void configure() {
         bind(new TypeLiteral<Queue<Transaction>>() {
         }).toInstance(mock(Queue.class));
-        bind(AccountService.class)
-            .toInstance(mock(AccountService.class));
+        bind(AccountsService.class)
+            .toInstance(mock(AccountsService.class));
       }
     };
   }

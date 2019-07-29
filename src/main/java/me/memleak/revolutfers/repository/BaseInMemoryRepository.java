@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-public abstract class BaseMapRepository<T extends ModelId> {
+public abstract class BaseInMemoryRepository<T extends ModelId> {
   private static final long ID_INIT_VALUE = 1L;
 
   private final AtomicLong idGenerator = new AtomicLong(ID_INIT_VALUE);

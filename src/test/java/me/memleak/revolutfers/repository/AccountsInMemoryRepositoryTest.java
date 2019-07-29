@@ -11,15 +11,15 @@ import java.util.concurrent.locks.Lock;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-public class AccountMapRepositoryTest extends BaseRepositoryTest {
+public class AccountsInMemoryRepositoryTest extends BaseRepositoryTest {
 
-  private AccountMapRepository uut;
+  private AccountsInMemoryRepository uut;
 
   @Override
   public void setUp() throws Exception {
     super.setUp();
 
-    uut = injector.getInstance(AccountMapRepository.class);
+    uut = injector.getInstance(AccountsInMemoryRepository.class);
   }
 
   @Override

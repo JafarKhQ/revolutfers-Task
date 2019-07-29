@@ -3,7 +3,7 @@ package me.memleak.revolutfers.controller;
 import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
-import me.memleak.revolutfers.service.AccountService;
+import me.memleak.revolutfers.service.AccountsService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,14 +15,14 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class AccountControllerIT extends BaseControllerIT {
+public class AccountsControllerTest extends BaseControllerTest {
   private static final Long ACCOUNT_ID = 0L;
 
-  private AccountService service;
+  private AccountsService service;
 
   @Before
   public void setUp() {
-    service = injector.getInstance(AccountService.class);
+    service = injector.getInstance(AccountsService.class);
     reset(service);
   }
 

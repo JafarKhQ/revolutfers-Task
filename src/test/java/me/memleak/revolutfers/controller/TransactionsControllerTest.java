@@ -1,7 +1,7 @@
 package me.memleak.revolutfers.controller;
 
 import me.memleak.revolutfers.controller.model.TransactionRequest;
-import me.memleak.revolutfers.events.NewTransactionEvent;
+import me.memleak.revolutfers.events.TransactionEvent;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.exception.InsufficientFundException;
 import me.memleak.revolutfers.model.Transaction;
@@ -17,13 +17,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
-public class TransactionControllerIT extends BaseControllerIT {
+public class TransactionsControllerTest extends BaseControllerTest {
 
-  private NewTransactionEvent event;
+  private TransactionEvent event;
 
   @Before
   public void setUp() {
-    event = injector.getInstance(NewTransactionEvent.class);
+    event = injector.getInstance(TransactionEvent.class);
   }
 
   @After

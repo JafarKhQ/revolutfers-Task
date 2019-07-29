@@ -4,20 +4,20 @@ import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
 import com.google.inject.name.Names;
 import io.javalin.Javalin;
-import me.memleak.revolutfers.events.NewTransactionEvent;
+import me.memleak.revolutfers.events.TransactionEvent;
 import me.memleak.revolutfers.model.Transaction;
-import me.memleak.revolutfers.service.QueueExecutor;
+import me.memleak.revolutfers.service.TransactionsService;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class MyGuiceModule extends AbstractModule {
+public class GuiceConfigurationModule extends AbstractModule {
 
   @Override
   protected void configure() {
     bindApp();
     bindProps();
-    bind(NewTransactionEvent.class).to(QueueExecutor.class);
+    bind(TransactionEvent.class).to(TransactionsService.class);
     bind(new TypeLiteral<Queue<Transaction>>(){}).toInstance(new ConcurrentLinkedQueue<>());
   }
 

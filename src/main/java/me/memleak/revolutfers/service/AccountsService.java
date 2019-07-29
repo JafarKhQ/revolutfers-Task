@@ -3,7 +3,7 @@ package me.memleak.revolutfers.service;
 import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
-import me.memleak.revolutfers.repository.AccountMapRepository;
+import me.memleak.revolutfers.repository.AccountsInMemoryRepository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -16,12 +16,12 @@ import java.util.stream.Stream;
 import static me.memleak.revolutfers.util.BalanceUtil.toBankingBalance;
 
 @Singleton
-public class AccountService {
+public class AccountsService {
 
-  private final AccountMapRepository repository;
+  private final AccountsInMemoryRepository repository;
 
   @Inject
-  public AccountService(AccountMapRepository repository) {
+  public AccountsService(AccountsInMemoryRepository repository) {
     this.repository = repository;
   }
 

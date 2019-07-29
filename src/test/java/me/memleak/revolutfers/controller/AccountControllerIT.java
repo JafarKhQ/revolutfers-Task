@@ -33,62 +33,82 @@ public class AccountControllerIT extends BaseControllerIT {
 
   @Test
   public void createAccount() throws Exception {
+    //given
     Account expected = new Account(ACCOUNT_ID, BigDecimal.ONE);
     when(service.create(any(AccountRequest.class))).thenReturn(expected);
-
     AccountRequest request = new AccountRequest();
     request.setBalance(1.000);
+
+    //when
     Account result = post("accounts", request, Account.class).getBody();
 
-    assertThat(result).isEqualTo(expected);
+    //then
     verify(service, only()).create(eq(request));
+    assertThat(result).isEqualTo(expected);
   }
 
   @Test
   public void createAccount_invalidAmount() throws Exception {
+    //given
     AccountRequest request = new AccountRequest();
     request.setBalance(-1);
+
+    //when
     String result = post("accounts", request, Object.class).getMessage();
 
+    //then
     assertThat(result).endsWith("Account balance cant be less than ZERO.");
   }
 
   @Test
   public void getAllAccounts() throws Exception {
+    //given
     List<Account> expected = new ArrayList<>();
     when(service.getAll()).thenReturn(expected);
 
+    //when
     Account[] result = get("accounts", Account[].class).getBody();
 
-    assertThat(result).hasSameElementsAs(expected);
+    //then
     verify(service, only()).getAll();
+    assertThat(result).hasSameElementsAs(expected);
   }
 
   @Test
   public void getAccount() throws Exception {
+    //given
     Account expected = new Account(ACCOUNT_ID);
     when(service.get(anyLong())).thenReturn(expected);
 
+    //when
     Account result = get("accounts/" + ACCOUNT_ID, Account.class).getBody();
 
-    assertThat(result).isEqualTo(expected);
+    //then
     verify(service, only()).get(eq(ACCOUNT_ID));
+    assertThat(result).isEqualTo(expected);
   }
 
   @Test
   public void getAccount_invalidId() throws Exception {
+    //given
+
+    //when
     String result = get("accounts/-5", Object.class).getMessage();
 
+    //then
     assertThat(result).endsWith("Id cant be negative.");
   }
 
   @Test
   public void getAccount_notFound() throws Exception {
+    //given
     when(service.get(anyLong())).thenThrow(new AccountNotFoundException("bla bla"));
 
+    //when
     String result = get("accounts/" + ACCOUNT_ID, Object.class).getMessage();
 
-    assertThat(result).endsWith("bla bla");
+    //then
     verify(service, only()).get(eq(ACCOUNT_ID));
+    assertThat(result).endsWith("bla bla");
   }
 }

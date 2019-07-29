@@ -21,7 +21,8 @@ public class AccountController {
   }
 
   public void getAllAccounts(Context ctx) {
-    ctx.json(ok(service.getAll()));
+    ctx.json(ok(service.getAll()))
+        .status(HttpStatus.OK_200);
   }
 
   public void getAccount(Context ctx) {
@@ -29,7 +30,8 @@ public class AccountController {
         .check(it -> it >= 0, "Id cant be negative.")
         .get();
 
-    ctx.json(ok(service.get(id)));
+    ctx.json(ok(service.get(id)))
+        .status(HttpStatus.OK_200);
   }
 
   public void createAccount(Context ctx) {

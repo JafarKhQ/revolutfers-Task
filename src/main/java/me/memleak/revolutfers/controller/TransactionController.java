@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static me.memleak.revolutfers.controller.model.ModelResponse.ok;
+import static me.memleak.revolutfers.util.TransactionFactory.from;
 
 @Singleton
 public class TransactionController {
@@ -39,7 +40,7 @@ public class TransactionController {
      * For the sake of simplicity (and since all accounts are in memory so the Transaction will be executed quickly)
      * Im going to block the request until the Transaction get executed. :)
      */
-    Future<Transaction> result = transactionEvent.onNewTransaction(TransactionFactory.from(transactionRequest));
+    Future<Transaction> result = transactionEvent.onNewTransaction(from(transactionRequest));
 
     try {
       Transaction transaction = result.get();

@@ -48,7 +48,7 @@ public class AccountControllerIT extends BaseControllerIT {
   }
 
   @Test
-  public void createAccount_invalidAmount() throws Exception {
+  public void createAccountInvalidAmount() throws Exception {
     //given
     AccountRequest request = new AccountRequest();
     request.setBalance(-1);
@@ -57,7 +57,7 @@ public class AccountControllerIT extends BaseControllerIT {
     String result = post("accounts", request, Object.class).getMessage();
 
     //then
-    assertThat(result).endsWith("Account balance cant be less than ZERO.");
+    assertThat(result).containsIgnoringCase("account balance cant be less than ZERO");
   }
 
   @Test
@@ -89,26 +89,26 @@ public class AccountControllerIT extends BaseControllerIT {
   }
 
   @Test
-  public void getAccount_invalidId() throws Exception {
+  public void getAccountInvalidId() throws Exception {
     //given
 
     //when
     String result = get("accounts/-5", Object.class).getMessage();
 
     //then
-    assertThat(result).endsWith("Id cant be negative.");
+    assertThat(result).containsIgnoringCase("Id cant be negative");
   }
 
   @Test
-  public void getAccount_notFound() throws Exception {
+  public void getAccountNotFoundAccount() throws Exception {
     //given
-    when(service.get(anyLong())).thenThrow(new AccountNotFoundException("bla bla"));
+    when(service.get(anyLong())).thenThrow(new AccountNotFoundException("Account not found."));
 
     //when
     String result = get("accounts/" + ACCOUNT_ID, Object.class).getMessage();
 
     //then
     verify(service, only()).get(eq(ACCOUNT_ID));
-    assertThat(result).endsWith("bla bla");
+    assertThat(result).containsIgnoringCase("account not found");
   }
 }

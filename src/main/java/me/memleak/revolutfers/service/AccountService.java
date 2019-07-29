@@ -35,7 +35,10 @@ public class AccountService {
   }
 
   public Account update(Account account) {
-    return repository.update(account);
+    lockAccounts(account);
+    Account updated = repository.update(account);
+    unlockAccounts(account);
+    return updated;
   }
 
   public Account create(AccountRequest request) {

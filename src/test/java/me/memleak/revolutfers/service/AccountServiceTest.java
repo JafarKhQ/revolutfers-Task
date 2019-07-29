@@ -94,13 +94,16 @@ public class AccountServiceTest extends BaseServiceTest {
   @Test
   public void update() {
     //given
+    Lock lock = new ReentrantLock();
     Account account = new Account(ACCOUNT_ID, BigDecimal.ONE);
+    when(repository.findLockById(eq(ACCOUNT_ID))).thenReturn(Optional.of(lock));
 
     //when
     uut.update(account);
 
     //then
     verify(repository).update(eq(account));
+    verify(repository, times(2)).findLockById(eq(ACCOUNT_ID));
   }
 
   @Test

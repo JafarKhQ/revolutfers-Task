@@ -91,6 +91,7 @@ public class TransactionsConsumerTest extends BaseServiceTest {
     assertThat(result.getAmount()).isEqualTo(BigDecimal.ONE);
     assertThat(result.getSourceId()).isEqualTo(SRC_ACCOUNT_ID);
     assertThat(result.getDestinationId()).isEqualTo(DST_ACCOUNT_ID);
+    assertThat(result.getStatus()).containsIgnoringCase("transaction completed");
 
     final Account srcAccount = accountsArgument.getAllValues().get(0);
     final Account destAccount = accountsArgument.getAllValues().get(1);

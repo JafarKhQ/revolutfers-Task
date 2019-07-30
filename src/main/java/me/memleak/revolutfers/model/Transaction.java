@@ -8,6 +8,7 @@ public class Transaction {
   private long sourceId;
   private long destinationId;
   private BigDecimal amount;
+  private String status;
 
   public Transaction() {
     this(0, 0, BigDecimal.ZERO);
@@ -43,6 +44,14 @@ public class Transaction {
     this.amount = amount;
   }
 
+  public String getStatus() {
+    return status;
+  }
+
+  public void setStatus(String status) {
+    this.status = status;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
@@ -50,12 +59,13 @@ public class Transaction {
     Transaction that = (Transaction) o;
     return sourceId == that.sourceId &&
         destinationId == that.destinationId &&
-        (amount.compareTo(that.amount) == 0);
+        (amount.compareTo(that.amount) == 0) &&
+        Objects.equals(status, that.status);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(sourceId, destinationId, amount);
+    return Objects.hash(sourceId, destinationId, amount, status);
   }
 
   @Override
@@ -64,6 +74,7 @@ public class Transaction {
         "sourceId=" + sourceId +
         ", destinationId=" + destinationId +
         ", amount=" + amount +
+        ", status=" + status +
         '}';
   }
 }

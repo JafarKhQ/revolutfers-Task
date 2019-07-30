@@ -49,6 +49,7 @@ public class TransactionsConsumer {
 
         accountsService.update(src);
         accountsService.update(dest);
+        transaction.setStatus("Transaction Completed :)");
       }
     } finally {
       if (null != transaction) {

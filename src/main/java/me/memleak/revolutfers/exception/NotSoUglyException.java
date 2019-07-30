@@ -1,10 +1,10 @@
 package me.memleak.revolutfers.exception;
 
-import java.text.MessageFormat;
+import static java.text.MessageFormat.format;
 
 class NotSoUglyException extends RuntimeException {
 
   NotSoUglyException(String message, Object... params) {
-    super(MessageFormat.format(message, params));
+    super(format(message, params));
   }
 }

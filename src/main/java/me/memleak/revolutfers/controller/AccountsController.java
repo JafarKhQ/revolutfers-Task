@@ -1,42 +1,43 @@
 package me.memleak.revolutfers.controller;
 
-import io.javalin.Context;
+import io.javalin.http.Context;
 import me.memleak.revolutfers.controller.model.AccountRequest;
-import me.memleak.revolutfers.controller.model.ModelResponce;
-import me.memleak.revolutfers.service.AccountService;
+import me.memleak.revolutfers.service.AccountsService;
 import org.eclipse.jetty.http.HttpStatus;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import static me.memleak.revolutfers.controller.model.ModelResponce.ok;
+import static me.memleak.revolutfers.controller.model.ModelResponse.ok;
 
 @Singleton
-public class AccountController {
+public class AccountsController {
 
-  private final AccountService service;
+  private final AccountsService service;
 
   @Inject
-  public AccountController(AccountService service) {
+  public AccountsController(AccountsService service) {
     this.service = service;
   }
 
   public void getAllAccounts(Context ctx) {
-    ctx.json(ok(service.getAll()));
+    ctx.json(ok(service.getAll()))
+        .status(HttpStatus.OK_200);
   }
 
   public void getAccount(Context ctx) {
-    long id = ctx.validatedPathParam("id").asLong()
+    long id = ctx.pathParam("id", Long.class)
         .check(it -> it >= 0, "Id cant be negative.")
-        .getOrThrow();
+        .get();
 
-    ctx.json(ok(service.get(id)));
+    ctx.json(ok(service.get(id)))
+        .status(HttpStatus.OK_200);
   }
 
   public void createAccount(Context ctx) {
-    AccountRequest request = ctx.validatedBodyAsClass(AccountRequest.class)
+    AccountRequest request = ctx.bodyValidator(AccountRequest.class)
         .check(it -> it.getBalance() >= 0, "Account balance cant be less than ZERO.")
-        .getOrThrow();
+        .get();
 
     ctx.json(ok(service.create(request)))
         .status(HttpStatus.CREATED_201);

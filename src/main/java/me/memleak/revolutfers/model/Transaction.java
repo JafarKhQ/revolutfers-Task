@@ -3,34 +3,21 @@ package me.memleak.revolutfers.model;
 import java.math.BigDecimal;
 import java.util.Objects;
 
-public class Transaction extends ModelId {
-
-  public enum TransactionStatus {
-    FAILED,
-    PENDING,
-    EXECUTED
-  }
+public class Transaction {
 
   private long sourceId;
   private long destinationId;
   private BigDecimal amount;
-  private TransactionStatus status;
-  private String message;
+  private String status;
 
   public Transaction() {
-    // make jackson happy :/
+    this(0, 0, BigDecimal.ZERO);
   }
 
   public Transaction(long sourceId, long destinationId, BigDecimal amount) {
-    this(null, sourceId, destinationId, amount);
-  }
-
-  public Transaction(Long id, long sourceId, long destinationId, BigDecimal amount) {
-    this.id = id;
     this.amount = amount;
     this.sourceId = sourceId;
     this.destinationId = destinationId;
-    this.status = TransactionStatus.PENDING;
   }
 
   public long getSourceId() {
@@ -57,20 +44,12 @@ public class Transaction extends ModelId {
     this.amount = amount;
   }
 
-  public TransactionStatus getStatus() {
+  public String getStatus() {
     return status;
   }
 
-  public void setStatus(TransactionStatus status) {
+  public void setStatus(String status) {
     this.status = status;
-  }
-
-  public String getMessage() {
-    return message;
-  }
-
-  public void setMessage(String message) {
-    this.message = message;
   }
 
   @Override
@@ -78,23 +57,24 @@ public class Transaction extends ModelId {
     if (this == o) return true;
     if (!(o instanceof Transaction)) return false;
     Transaction that = (Transaction) o;
-    return id.equals(that.id) &&
-        sourceId == that.sourceId &&
+    return sourceId == that.sourceId &&
         destinationId == that.destinationId &&
         (amount.compareTo(that.amount) == 0) &&
-        status == that.status &&
-        Objects.equals(message, that.message);
+        Objects.equals(status, that.status);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(id, sourceId, destinationId, amount, status, message);
+    return Objects.hash(sourceId, destinationId, amount, status);
   }
 
   @Override
   public String toString() {
     return "Transaction{" +
-        "id=" + id +
+        "sourceId=" + sourceId +
+        ", destinationId=" + destinationId +
+        ", amount=" + amount +
+        ", status=" + status +
         '}';
   }
 }

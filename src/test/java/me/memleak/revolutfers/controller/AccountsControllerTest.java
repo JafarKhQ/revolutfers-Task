@@ -3,7 +3,7 @@ package me.memleak.revolutfers.controller;
 import me.memleak.revolutfers.controller.model.AccountRequest;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.model.Account;
-import me.memleak.revolutfers.service.AccountService;
+import me.memleak.revolutfers.service.AccountsService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,14 +15,14 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-public class AccountControllerIT extends BaseControllerIT {
+public class AccountsControllerTest extends BaseControllerTest {
   private static final Long ACCOUNT_ID = 0L;
 
-  private AccountService service;
+  private AccountsService service;
 
   @Before
   public void setUp() {
-    service = injector.getInstance(AccountService.class);
+    service = injector.getInstance(AccountsService.class);
     reset(service);
   }
 
@@ -33,62 +33,82 @@ public class AccountControllerIT extends BaseControllerIT {
 
   @Test
   public void createAccount() throws Exception {
+    //given
     Account expected = new Account(ACCOUNT_ID, BigDecimal.ONE);
     when(service.create(any(AccountRequest.class))).thenReturn(expected);
-
     AccountRequest request = new AccountRequest();
     request.setBalance(1.000);
+
+    //when
     Account result = post("accounts", request, Account.class).getBody();
 
-    assertThat(result).isEqualTo(expected);
+    //then
     verify(service, only()).create(eq(request));
+    assertThat(result).isEqualTo(expected);
   }
 
   @Test
-  public void createAccount_invalidAmount() throws Exception {
+  public void createAccountInvalidAmount() throws Exception {
+    //given
     AccountRequest request = new AccountRequest();
     request.setBalance(-1);
+
+    //when
     String result = post("accounts", request, Object.class).getMessage();
 
-    assertThat(result).endsWith("Account balance cant be less than ZERO.");
+    //then
+    assertThat(result).containsIgnoringCase("account balance cant be less than ZERO");
   }
 
   @Test
   public void getAllAccounts() throws Exception {
+    //given
     List<Account> expected = new ArrayList<>();
     when(service.getAll()).thenReturn(expected);
 
+    //when
     Account[] result = get("accounts", Account[].class).getBody();
 
-    assertThat(result).hasSameElementsAs(expected);
+    //then
     verify(service, only()).getAll();
+    assertThat(result).hasSameElementsAs(expected);
   }
 
   @Test
   public void getAccount() throws Exception {
+    //given
     Account expected = new Account(ACCOUNT_ID);
     when(service.get(anyLong())).thenReturn(expected);
 
+    //when
     Account result = get("accounts/" + ACCOUNT_ID, Account.class).getBody();
 
-    assertThat(result).isEqualTo(expected);
+    //then
     verify(service, only()).get(eq(ACCOUNT_ID));
+    assertThat(result).isEqualTo(expected);
   }
 
   @Test
-  public void getAccount_invalidId() throws Exception {
+  public void getAccountInvalidId() throws Exception {
+    //given
+
+    //when
     String result = get("accounts/-5", Object.class).getMessage();
 
-    assertThat(result).endsWith("Id cant be negative.");
+    //then
+    assertThat(result).containsIgnoringCase("Id cant be negative");
   }
 
   @Test
-  public void getAccount_notFound() throws Exception {
-    when(service.get(anyLong())).thenThrow(new AccountNotFoundException("bla bla"));
+  public void getAccountNotFoundAccount() throws Exception {
+    //given
+    when(service.get(anyLong())).thenThrow(new AccountNotFoundException("Account not found."));
 
+    //when
     String result = get("accounts/" + ACCOUNT_ID, Object.class).getMessage();
 
-    assertThat(result).endsWith("bla bla");
+    //then
     verify(service, only()).get(eq(ACCOUNT_ID));
+    assertThat(result).containsIgnoringCase("account not found");
   }
 }

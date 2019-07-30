@@ -24,19 +24,26 @@ public class TransactionsConsumer {
   }
 
   public Transaction consumeNext() {
-    Transaction transaction = queue.poll();
-    assert transaction != null; // shouldn't happen
-    LOGGER.info("Start processing Transaction {}", transaction.toString());
-
-    Account src = accountsService.get(transaction.getSourceId());
-    Account dest = accountsService.get(transaction.getDestinationId());
+    Transaction transaction = null;
     try {
-      accountsService.lockAccounts(src, dest);
+      synchronized (this) {
+        /*
+         * synchronized the part where polling then locking to make sure
+         * no other Thread do Polling after and locking before.
+         */
+        transaction = queue.poll();
+        assert transaction != null; // shouldn't happen
+        LOGGER.debug("Polling & Locking the Transaction {}.", transaction);
+        accountsService.lockAccounts(transaction.getSourceId(), transaction.getDestinationId());
+      } // synchronized
+
+      Account src = accountsService.get(transaction.getSourceId());
+      Account dest = accountsService.get(transaction.getDestinationId());
       if (src.getBalance().compareTo(transaction.getAmount()) < 0) {
-        LOGGER.info("Insufficient fund.");
+        LOGGER.info("Insufficient fund for {}.", transaction);
         throw new InsufficientFundException("Insufficient fund");
       } else {
-        LOGGER.info("Transferring fund.");
+        LOGGER.debug("Transferring the fund for {}.", transaction);
         src.setBalance(src.getBalance().subtract(transaction.getAmount()));
         dest.setBalance(dest.getBalance().add(transaction.getAmount()));
 
@@ -44,7 +51,10 @@ public class TransactionsConsumer {
         accountsService.update(dest);
       }
     } finally {
-      accountsService.unlockAccounts(src, dest);
+      if (null != transaction) {
+        LOGGER.debug("Unlocking for Transaction {}", transaction);
+        accountsService.unlockAccounts(transaction.getSourceId(), transaction.getDestinationId());
+      }
     }
 
     return transaction;

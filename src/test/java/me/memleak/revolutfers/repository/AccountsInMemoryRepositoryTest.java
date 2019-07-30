@@ -1,6 +1,7 @@
 package me.memleak.revolutfers.repository;
 
 import com.google.inject.AbstractModule;
+import me.memleak.revolutfers.exception.ItemNotFoundException;
 import me.memleak.revolutfers.model.Account;
 import org.junit.Test;
 
@@ -92,17 +93,15 @@ public class AccountsInMemoryRepositoryTest extends BaseRepositoryTest {
     assertThat(result).isEqualTo(created);
   }
 
-  @Test
-  public void updateNonExistingWillCreateNew() {
+  @Test(expected = ItemNotFoundException.class)
+  public void updateNonExistingWillThrowNotFound() {
     //given
     Account account = new Account(BigDecimal.TEN);
 
     //when
-    Account result = uut.update(account);
+    uut.update(account);
 
     //then
-    assertThat(result.getId()).isPositive();
-    assertThat(result.getBalance()).isEqualTo(BigDecimal.TEN);
   }
 
   @Test

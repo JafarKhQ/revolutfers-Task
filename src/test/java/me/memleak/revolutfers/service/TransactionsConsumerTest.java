@@ -42,44 +42,6 @@ public class TransactionsConsumerTest extends BaseServiceTest {
   }
 
   @Test
-  public void shouldFailedWhenSrcAccountNotFound() {
-    // given
-    Transaction transaction = new Transaction(NOT_FOUND_ACCOUNT_ID, DST_ACCOUNT_ID, BigDecimal.ZERO);
-    when(queue.poll()).thenReturn(transaction);
-    when(accountsService.get(eq(NOT_FOUND_ACCOUNT_ID))).thenThrow(AccountNotFoundException.class);
-
-    // when
-    try {
-      uut.consumeNext();
-      failBecauseExceptionWasNotThrown(AccountNotFoundException.class);
-    } catch (AccountNotFoundException e) {
-      //then
-      verify(queue).poll();
-      verify(accountsService).get(eq(NOT_FOUND_ACCOUNT_ID));
-    }
-  }
-
-  @Test
-  public void shouldFailedWhenDstAccountNotFound() {
-    // given
-    Transaction transaction = new Transaction(SRC_ACCOUNT_ID, NOT_FOUND_ACCOUNT_ID, BigDecimal.ZERO);
-    when(queue.poll()).thenReturn(transaction);
-    when(accountsService.get(eq(SRC_ACCOUNT_ID))).thenReturn(new Account());
-    when(accountsService.get(eq(NOT_FOUND_ACCOUNT_ID))).thenThrow(AccountNotFoundException.class);
-
-    try {
-      // when
-      uut.consumeNext();
-      failBecauseExceptionWasNotThrown(AccountNotFoundException.class);
-    } catch (AccountNotFoundException e) {
-      //then
-      verify(queue).poll();
-      verify(accountsService).get(eq(SRC_ACCOUNT_ID));
-      verify(accountsService).get(eq(NOT_FOUND_ACCOUNT_ID));
-    }
-  }
-
-  @Test
   public void shouldFailedWhenInsufficientFund() {
     // given
     Account src = new Account(SRC_ACCOUNT_ID, BigDecimal.ONE),
@@ -96,10 +58,10 @@ public class TransactionsConsumerTest extends BaseServiceTest {
     } catch (InsufficientFundException e) {
       //then
       verify(queue).poll();
-      verify(accountsService).lockAccounts(eq(src), eq(dest));
+      verify(accountsService).lockAccounts(eq(SRC_ACCOUNT_ID), eq(DST_ACCOUNT_ID));
       verify(accountsService).get(eq(SRC_ACCOUNT_ID));
       verify(accountsService).get(eq(DST_ACCOUNT_ID));
-      verify(accountsService).unlockAccounts(eq(src), eq(dest));
+      verify(accountsService).unlockAccounts(eq(SRC_ACCOUNT_ID), eq(DST_ACCOUNT_ID));
     }
   }
 
@@ -118,10 +80,10 @@ public class TransactionsConsumerTest extends BaseServiceTest {
 
     //then
     verify(queue).poll();
-    verify(accountsService).lockAccounts(eq(src), eq(dest));
+    verify(accountsService).lockAccounts(eq(SRC_ACCOUNT_ID), eq(DST_ACCOUNT_ID));
     verify(accountsService).get(eq(SRC_ACCOUNT_ID));
     verify(accountsService).get(eq(DST_ACCOUNT_ID));
-    verify(accountsService).unlockAccounts(eq(src), eq(dest));
+    verify(accountsService).unlockAccounts(eq(SRC_ACCOUNT_ID), eq(DST_ACCOUNT_ID));
 
     ArgumentCaptor<Account> accountsArgument = ArgumentCaptor.forClass(Account.class);
     verify(accountsService, times(2)).update(accountsArgument.capture());

@@ -96,12 +96,14 @@ public class AccountsServiceTest extends BaseServiceTest {
     //given
     Lock lock = new ReentrantLock();
     Account account = new Account(ACCOUNT_ID, BigDecimal.ONE);
+    when(repository.find(eq(ACCOUNT_ID))).thenReturn(Optional.of(account));
     when(repository.findLockById(eq(ACCOUNT_ID))).thenReturn(Optional.of(lock));
 
     //when
     uut.update(account);
 
     //then
+    verify(repository).find(eq(ACCOUNT_ID));
     verify(repository).update(eq(account));
     verify(repository, times(2)).findLockById(eq(ACCOUNT_ID));
   }
@@ -114,7 +116,7 @@ public class AccountsServiceTest extends BaseServiceTest {
     when(repository.findLockById(anyLong())).thenReturn(Optional.of(new ReentrantLock()));
 
     //when
-    uut.lockAccounts(src, dest);
+    uut.lockAccounts(src.getId(), dest.getId());
 
     //then
     inOrder.verify(repository).findLockById(eq(3L));
@@ -133,7 +135,7 @@ public class AccountsServiceTest extends BaseServiceTest {
     });
 
     //when
-    uut.unlockAccounts(src, dest);
+    uut.unlockAccounts(src.getId(), dest.getId());
 
     //then
     inOrder.verify(repository).findLockById(eq(1L));

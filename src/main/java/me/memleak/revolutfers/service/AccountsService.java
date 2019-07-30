@@ -7,11 +7,11 @@ import me.memleak.revolutfers.repository.AccountsInMemoryRepository;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.Lock;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 import static me.memleak.revolutfers.util.BalanceUtil.toBankingBalance;
 
@@ -35,9 +35,12 @@ public class AccountsService {
   }
 
   public Account update(Account account) {
-    lockAccounts(account);
+    // check if its exist first
+    get(account.getId());
+    // lock (same Thread will not lock) then update
+    lockAccounts(account.getId());
     Account updated = repository.update(account);
-    unlockAccounts(account);
+    unlockAccounts(account.getId());
     return updated;
   }
 
@@ -47,20 +50,19 @@ public class AccountsService {
     );
   }
 
-  public void lockAccounts(Account... accounts) {
-    lockUnlockByIds(Lock::lock, accounts);
+  public void lockAccounts(long... ids) {
+    lockUnlockAccounts(Lock::lock, ids);
   }
 
-  public void unlockAccounts(Account... accounts) {
-    lockUnlockByIds(Lock::unlock, accounts);
+  public void unlockAccounts(long... ids) {
+    lockUnlockAccounts(Lock::unlock, ids);
   }
 
-  private void lockUnlockByIds(Consumer<? super Lock> action, Account... accounts) {
-    Stream.of(accounts)
-        .map(Account::getId)
+  private void lockUnlockAccounts(Consumer<? super Lock> action, long... ids) {
+    Arrays.stream(ids)
         .sorted()
-        .map(repository::findLockById)
+        .mapToObj(repository::findLockById)
         .map(Optional::get)
-        .forEach(action);
+        .forEachOrdered(action);
   }
 }

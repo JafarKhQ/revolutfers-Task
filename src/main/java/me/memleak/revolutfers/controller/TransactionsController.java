@@ -4,6 +4,7 @@ import io.javalin.http.Context;
 import me.memleak.revolutfers.controller.model.TransactionRequest;
 import me.memleak.revolutfers.events.TransactionEvent;
 import me.memleak.revolutfers.model.Transaction;
+import me.memleak.revolutfers.service.AccountsService;
 import org.eclipse.jetty.http.HttpStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,10 +21,12 @@ import static me.memleak.revolutfers.util.TransactionFactory.from;
 public class TransactionsController {
   private static final Logger LOGGER = LoggerFactory.getLogger(TransactionsController.class);
 
+  private final AccountsService accountsService;
   private final TransactionEvent transactionEvent;
 
   @Inject
-  public TransactionsController(TransactionEvent transactionEvent) {
+  public TransactionsController(TransactionEvent transactionEvent, AccountsService accountsService) {
+    this.accountsService = accountsService;
     this.transactionEvent = transactionEvent;
   }
 
@@ -34,6 +37,10 @@ public class TransactionsController {
         .check(t -> t.getSourceAccount() != t.getDestinationAccount(), "Source and Destination Accounts cant be same.")
         .check(t -> t.getAmount() > 0.0, "Amount must be greater than zero.")
         .get();
+
+    // Check if accounts are exist
+    accountsService.get(transactionRequest.getSourceAccount());
+    accountsService.get(transactionRequest.getDestinationAccount());
 
     /*
      * For the sake of simplicity (and since all accounts are in memory so the Transaction will be executed quickly)

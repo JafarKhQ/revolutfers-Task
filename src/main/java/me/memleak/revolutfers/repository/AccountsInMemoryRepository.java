@@ -17,7 +17,7 @@ public class AccountsInMemoryRepository extends BaseInMemoryRepository<Account> 
   @Override
   public Account create(Account item) {
     Account account = super.create(item);
-    mapDBLock.put(account.getId(), new ReentrantLock());
+    mapDBLock.put(account.getId(), new ReentrantLock(true));
     return account;
   }
 

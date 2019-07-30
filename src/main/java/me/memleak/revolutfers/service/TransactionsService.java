@@ -9,7 +9,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import java.util.Queue;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 @Singleton
 public class TransactionsService implements TransactionEvent {
@@ -40,8 +43,8 @@ public class TransactionsService implements TransactionEvent {
 
   @Override
   public Future<Transaction> onNewTransaction(Transaction transaction) {
-      LOGGER.info("The new Transaction added to the queue.");
-      queue.add(transaction);
-      return executor.submit(transactionsConsumer::consumeNext);
+    LOGGER.debug("The new Transaction added to the queue {}.", transaction);
+    queue.add(transaction);
+    return executor.submit(transactionsConsumer::consumeNext);
   }
 }

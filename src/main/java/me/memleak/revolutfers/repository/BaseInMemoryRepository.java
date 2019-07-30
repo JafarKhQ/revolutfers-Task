@@ -1,8 +1,12 @@
 package me.memleak.revolutfers.repository;
 
+import me.memleak.revolutfers.exception.ItemNotFoundException;
 import me.memleak.revolutfers.model.ModelId;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -23,7 +27,7 @@ public abstract class BaseInMemoryRepository<T extends ModelId> {
   public T update(T item) {
     Long id = item.getId();
     if (id == null || !mapDB.containsKey(id)) {
-      return create(item);
+      throw new ItemNotFoundException("Item with id {0} not persisted in db", id);
     }
 
     mapDB.replace(id, item);

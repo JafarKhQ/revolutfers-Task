@@ -5,50 +5,59 @@ import me.memleak.revolutfers.events.TransactionEvent;
 import me.memleak.revolutfers.exception.AccountNotFoundException;
 import me.memleak.revolutfers.exception.InsufficientFundException;
 import me.memleak.revolutfers.model.Transaction;
+import me.memleak.revolutfers.service.AccountsService;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.math.BigDecimal;
-import java.util.concurrent.CompletableFuture;
 
+import static java.util.concurrent.CompletableFuture.completedFuture;
 import static java.util.concurrent.CompletableFuture.failedFuture;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 public class TransactionsControllerTest extends BaseControllerTest {
+  private static final long SRC_ACCOUNT_ID = 1;
+  private static final long DEST_ACCOUNT_ID = 2;
+  private static final long INVALID_ACCOUNT_ID = -1;
 
   private TransactionEvent event;
+  private AccountsService accountsService;
 
   @Before
   public void setUp() {
     event = injector.getInstance(TransactionEvent.class);
+    accountsService = injector.getInstance(AccountsService.class);
   }
 
   @After
   public void tearDown() {
-    verifyNoMoreInteractions(event);
-    reset(event);
+    verifyNoMoreInteractions(event, accountsService);
+    reset(event, accountsService);
   }
 
   @Test
   public void createTransaction() throws Exception {
     //given
     TransactionRequest request = new TransactionRequest();
-    request.setSourceAccount(0);
-    request.setDestinationAccount(1);
-    request.setAmount(1);
+    request.setSourceAccount(SRC_ACCOUNT_ID);
+    request.setDestinationAccount(DEST_ACCOUNT_ID);
+    request.setAmount(10);
 
-    Transaction expected = new Transaction(0, 1, BigDecimal.ONE);
+    Transaction expected = new Transaction(SRC_ACCOUNT_ID, DEST_ACCOUNT_ID, BigDecimal.TEN);
     when(event.onNewTransaction(any(Transaction.class))).
-        thenReturn(CompletableFuture.completedFuture(expected));
+        thenReturn(completedFuture(expected));
 
     //when
     Transaction result = post("transactions", request, Transaction.class).getBody();
 
     //then
+    verify(accountsService).get(eq(SRC_ACCOUNT_ID));
+    verify(accountsService).get(eq(DEST_ACCOUNT_ID));
     verify(event, only()).onNewTransaction(eq(expected));
+
     assertThat(result).isEqualTo(expected);
   }
 
@@ -56,8 +65,8 @@ public class TransactionsControllerTest extends BaseControllerTest {
   public void createTransactionInvalidSource() throws Exception {
     //given
     TransactionRequest request = new TransactionRequest();
-    request.setSourceAccount(-1);
-    request.setDestinationAccount(1);
+    request.setSourceAccount(INVALID_ACCOUNT_ID);
+    request.setDestinationAccount(DEST_ACCOUNT_ID);
     request.setAmount(1);
 
     //when
@@ -71,8 +80,8 @@ public class TransactionsControllerTest extends BaseControllerTest {
   public void createTransactionInvalidDestination() throws Exception {
     //given
     TransactionRequest request = new TransactionRequest();
-    request.setSourceAccount(0);
-    request.setDestinationAccount(-1);
+    request.setSourceAccount(SRC_ACCOUNT_ID);
+    request.setDestinationAccount(INVALID_ACCOUNT_ID);
     request.setAmount(1);
 
     //when
@@ -86,8 +95,8 @@ public class TransactionsControllerTest extends BaseControllerTest {
   public void createTransactionSameSourceDestination() throws Exception {
     //given
     TransactionRequest request = new TransactionRequest();
-    request.setSourceAccount(0);
-    request.setDestinationAccount(0);
+    request.setSourceAccount(SRC_ACCOUNT_ID);
+    request.setDestinationAccount(SRC_ACCOUNT_ID);
     request.setAmount(1);
 
     //when
@@ -101,8 +110,8 @@ public class TransactionsControllerTest extends BaseControllerTest {
   public void createTransactionInvalidAmount() throws Exception {
     //given
     TransactionRequest request = new TransactionRequest();
-    request.setSourceAccount(0);
-    request.setDestinationAccount(1);
+    request.setSourceAccount(SRC_ACCOUNT_ID);
+    request.setDestinationAccount(DEST_ACCOUNT_ID);
     request.setAmount(-1);
 
     //when
@@ -113,22 +122,42 @@ public class TransactionsControllerTest extends BaseControllerTest {
   }
 
   @Test
-  public void createTransactionAccountNotFound() throws Exception {
+  public void createTransactionSrcAccountNotFound() throws Exception {
     //given
     TransactionRequest request = new TransactionRequest();
-    request.setSourceAccount(0);
-    request.setDestinationAccount(1);
+    request.setSourceAccount(SRC_ACCOUNT_ID);
+    request.setDestinationAccount(DEST_ACCOUNT_ID);
     request.setAmount(1);
-    Transaction transaction = new Transaction(0, 1, BigDecimal.ONE);
 
-    when(event.onNewTransaction(any(Transaction.class))).
-        thenReturn(failedFuture(new AccountNotFoundException("Account not found.")));
+    when(accountsService.get(eq(SRC_ACCOUNT_ID))).
+        thenThrow(new AccountNotFoundException("Account not found."));
 
     //when
     String result = post("transactions", request, String.class).getMessage();
 
     //then
-    verify(event, only()).onNewTransaction(eq(transaction));
+    verify(accountsService, only()).get(eq(SRC_ACCOUNT_ID));
+    assertThat(result).containsIgnoringCase("Account not found");
+  }
+
+  @Test
+  public void createTransactionDestAccountNotFound() throws Exception {
+    //given
+    TransactionRequest request = new TransactionRequest();
+    request.setSourceAccount(SRC_ACCOUNT_ID);
+    request.setDestinationAccount(DEST_ACCOUNT_ID);
+    request.setAmount(1);
+
+    when(accountsService.get(eq(DEST_ACCOUNT_ID))).
+        thenThrow(new AccountNotFoundException("Account not found."));
+
+    //when
+    String result = post("transactions", request, String.class).getMessage();
+
+    //then
+    verify(accountsService).get(eq(SRC_ACCOUNT_ID));
+    verify(accountsService).get(eq(DEST_ACCOUNT_ID));
+
     assertThat(result).containsIgnoringCase("Account not found");
   }
 
@@ -136,10 +165,10 @@ public class TransactionsControllerTest extends BaseControllerTest {
   public void createTransactionInsufficientFund() throws Exception {
     //given
     TransactionRequest request = new TransactionRequest();
-    request.setSourceAccount(0);
-    request.setDestinationAccount(1);
+    request.setSourceAccount(SRC_ACCOUNT_ID);
+    request.setDestinationAccount(DEST_ACCOUNT_ID);
     request.setAmount(1);
-    Transaction transaction = new Transaction(0, 1, BigDecimal.ONE);
+    Transaction transaction = new Transaction(SRC_ACCOUNT_ID, DEST_ACCOUNT_ID, BigDecimal.ONE);
 
     when(event.onNewTransaction(any(Transaction.class))).
         thenReturn(failedFuture(new InsufficientFundException("Insufficient Fund.")));
@@ -148,7 +177,10 @@ public class TransactionsControllerTest extends BaseControllerTest {
     String result = post("transactions", request, String.class).getMessage();
 
     //then
+    verify(accountsService).get(eq(SRC_ACCOUNT_ID));
+    verify(accountsService).get(eq(DEST_ACCOUNT_ID));
     verify(event, only()).onNewTransaction(eq(transaction));
+
     assertThat(result).containsIgnoringCase("insufficient fund");
   }
 }

@@ -12,19 +12,19 @@
     {
       "code": 0,
       "body": {
-          "id": 0,
+          "id": 1,
           "balance": 25.69
         }
     }
 
 ### Get Account :id
-    GET /accounts/0
+    GET /accounts/1
 
     Response
     {
       "code": 0,
       "body": {
-          "id": 0,
+          "id": 1,
           "balance": 25.69
         }
     }
@@ -37,11 +37,11 @@
     "code": 0,
     "body": [
         {
-            "id": 0,
+            "id": 1,
             "balance": 25.69
         },
         {
-            "id": 1,
+            "id": 2,
             "balance": 25.69
         }
       ]
@@ -58,54 +58,11 @@
     
     Response
     {
-    "code": 0,
-    "body": {
-        "id": 0,
-        "sourceId": 1,
-        "destinationId": 2,
-        "amount": 6,
-        "status": "PENDING"
-      }
-    }
-
-### Get Transaction :id
-    GET /transactions/0
-
-    Response
-    {
-    "code": 0,
-    "body": {
-        "id": 0,
-        "sourceId": 1,
-        "destinationId": 2,
-        "amount": 6,
-        "status": "FAILED",
-        "message": "The Destination Account is not found."
-      }
-    }
-    
-### Get All Transactions
-    GET /transactions
-    
-    Response
-    {
-    "code": 0,
-    "body": [
-        {
-            "id": 0,
+        "code": 0,
+        "body": {
             "sourceId": 1,
             "destinationId": 2,
             "amount": 6,
-            "status": "FAILED",
-            "message": "The Destination Account is not found."
-        },
-        {
-            "id": 1,
-            "sourceId": 1,
-            "destinationId": 2,
-            "amount": 6,
-            "status": "EXECUTED"
-         }
-      ]
+            "status": "Transaction Completed :)"
+        }
     }
-
